@@ -1,1 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
+@use "bootstrap/scss/bootstrap" as *;
+
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  height: 100vh;
+}
