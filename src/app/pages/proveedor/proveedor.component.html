@@ -1,0 +1,148 @@
+<div class="container py-4">
+  <!-- Card con tabla -->
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Proveedores</h5>
+      <button
+        class="btn btn-success btn-sm"
+        data-bs-toggle="modal"
+        data-bs-target="#modalAgregarProveedor"
+      >
+        <i class="bi bi-plus-circle me-1"></i>Agregar proveedor
+      </button>
+    </div>
+
+    <div class="input-group mb-3">
+      <span class="input-group-text">
+        <i class="bi bi-search"></i>
+      </span>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Buscar proveedor..."
+        [(ngModel)]="filtroBusqueda"
+      />
+    </div>
+
+    <div class="card-body">
+      <!-- Tabla de proveedores -->
+      <div *ngIf="!cargando && proveedores.length > 0; else sinProveedores">
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Email</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let proveedor of proveedoresFiltrados">
+              <td>{{ proveedor.nombre }}</td>
+              <td>{{ proveedor.telefono }}</td>
+              <td>{{ proveedor.email }}</td>
+              <td>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="eliminarProveedor(proveedor.id!)"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-primary me-2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalAgregarProveedor"
+                  (click)="abrirModalEditar(proveedor)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #sinProveedores>
+        <div class="alert alert-warning">No hay proveedores registrados.</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para agregar proveedor -->
+<div
+  class="modal fade"
+  id="modalAgregarProveedor"
+  tabindex="-1"
+  aria-labelledby="modalAgregarProveedorLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="proveedorForm" (ngSubmit)="guardarProveedor()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalAgregarProveedorLabel">
+            Nuevo proveedor
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Cerrar"
+          ></button>
+        </div>
+
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input
+              id="nombre"
+              type="text"
+              class="form-control"
+              formControlName="nombre"
+              placeholder="Nombre del proveedor"
+            />
+          </div>
+          <div class="col-md-3">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <input
+              id="telefono"
+              type="text"
+              class="form-control"
+              formControlName="telefono"
+              placeholder="555-0000"
+            />
+          </div>
+          <div class="col-md-3">
+            <label for="email" class="form-label">Correo electrónico</label>
+            <input
+              id="email"
+              type="email"
+              class="form-control"
+              formControlName="email"
+              placeholder="correo@ejemplo.com"
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-success"
+            [disabled]="proveedorForm.invalid"
+            data-bs-dismiss="modal"
+          >
+            Guardar proveedor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
