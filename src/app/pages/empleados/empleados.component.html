@@ -1,0 +1,194 @@
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Empleados</h5>
+      <button class="btn btn-success btn-sm" (click)="abrirModalNuevo()">
+        <i class="bi bi-plus-circle me-1"></i>Agregar Empleado
+      </button>
+    </div>
+
+    <div class="input-group mb-3">
+      <span class="input-group-text">
+        <i class="bi bi-search"></i>
+      </span>
+      <input type="text" class="form-control" placeholder="Buscar empleado..." [(ngModel)]="filtroBusqueda">
+      <button class="btn btn-outline-secondary" type="button" (click)="toggleFiltros()">
+        <i class="bi bi-funnel"></i> Filtros
+      </button>
+    </div>
+
+    <div class="card-body">
+      <div *ngIf="cargando" class="text-center py-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando empleados...</p>
+      </div>
+      
+      <div *ngIf="!cargando && empleados.length > 0; else sinEmpleados">
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Nombre</th>
+              <th>Puesto</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let empleado of empleadosFiltrados">
+              <td>{{ empleado.nombre || '' }} {{ empleado.apellidoPaterno || '' }} {{ empleado.apellidoMaterno || '' }}</td>
+              <td>{{ empleado.puesto || '' }}</td>
+              <td>{{ empleado.telefono || '' }}</td>
+              <td>{{ empleado.correo || '' }}</td>
+              <td>
+                <span class="badge" [ngClass]="empleado.activo ? 'bg-success' : 'bg-secondary'">
+                  {{ empleado.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-outline-danger me-2" (click)="eliminarEmpleado(empleado.id!)">
+                  <i class="bi bi-trash"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-primary" (click)="abrirModalEditar(empleado)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #sinEmpleados>
+        <div *ngIf="!cargando" class="alert alert-warning">No hay empleados registrados.</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para agregar/editar empleado -->
+<div class="modal fade" id="modalAgregarEmpleado" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="empleadoForm" (ngSubmit)="guardarEmpleado()">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ modoEditar ? 'Editar' : 'Nuevo' }} Empleado</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <div class="modal-body row g-3">
+          <!-- Columna 1: Datos personales -->
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input type="text" class="form-control" formControlName="nombre" required>
+              <div *ngIf="empleadoForm.get('nombre')?.invalid && empleadoForm.get('nombre')?.touched" class="text-danger small">
+                El nombre es requerido
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Apellido Paterno</label>
+              <input type="text" class="form-control" formControlName="apellidoPaterno" required>
+              <div *ngIf="empleadoForm.get('apellidoPaterno')?.invalid && empleadoForm.get('apellidoPaterno')?.touched" class="text-danger small">
+                El apellido paterno es requerido
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Apellido Materno</label>
+              <input type="text" class="form-control" formControlName="apellidoMaterno" required>
+              <div *ngIf="empleadoForm.get('apellidoMaterno')?.invalid && empleadoForm.get('apellidoMaterno')?.touched" class="text-danger small">
+                El apellido materno es requerido
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Edad</label>
+              <input type="number" class="form-control" formControlName="edad" min="18" required>
+              <div *ngIf="empleadoForm.get('edad')?.invalid && empleadoForm.get('edad')?.touched" class="text-danger small">
+                La edad debe ser mayor a 18 años
+              </div>
+            </div>
+          </div>
+          
+          <!-- Columna 2: Datos laborales -->
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Sexo</label>
+              <select class="form-select" formControlName="sexo" required>
+                <option value="">Seleccionar...</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="Otro">Otro</option>
+              </select>
+              <div *ngIf="empleadoForm.get('sexo')?.invalid && empleadoForm.get('sexo')?.touched" class="text-danger small">
+                Seleccione una opción
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Puesto</label>
+              <select class="form-select" formControlName="puesto" required>
+                <option value="">Seleccionar...</option>
+                <option value="dueño">Dueño</option>
+                <option value="gerente">Gerente</option>
+                <option value="recepcionista">Recepcionista</option>
+                <option value="otro">Otro</option>
+              </select>
+              <div *ngIf="empleadoForm.get('puesto')?.invalid && empleadoForm.get('puesto')?.touched" class="text-danger small">
+                Seleccione un puesto
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Fecha de Ingreso</label>
+              <input type="date" class="form-control" formControlName="fechaIngreso" required>
+              <div *ngIf="empleadoForm.get('fechaIngreso')?.invalid && empleadoForm.get('fechaIngreso')?.touched" class="text-danger small">
+                La fecha de ingreso es requerida
+              </div>
+            </div>
+            
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="activo" formControlName="activo">
+              <label class="form-check-label" for="activo">Activo</label>
+            </div>
+          </div>
+          
+          <!-- Columna 3: Contacto -->
+          <div class="col-12">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Correo electrónico</label>
+                <input type="email" class="form-control" formControlName="correo" required>
+                <div *ngIf="empleadoForm.get('correo')?.invalid && empleadoForm.get('correo')?.touched" class="text-danger small">
+                  Ingrese un correo electrónico válido
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <label class="form-label">Teléfono</label>
+                <input type="tel" class="form-control" formControlName="telefono" 
+                       pattern="[0-9]{10}" placeholder="10 dígitos" required>
+                <div *ngIf="empleadoForm.get('telefono')?.invalid && empleadoForm.get('telefono')?.touched" class="text-danger small">
+                  Ingrese un número de 10 dígitos
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="empleadoForm.invalid || guardando">
+            <span *ngIf="guardando" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            {{ modoEditar ? 'Actualizar' : 'Guardar' }} Empleado
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
