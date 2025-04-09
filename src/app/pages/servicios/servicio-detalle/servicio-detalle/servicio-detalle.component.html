@@ -1,0 +1,144 @@
+<div class="container-fluid">
+    <div class="row mb-4">
+      <div class="col-12">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a routerLink="/servicios">Servicios</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Detalle del Servicio</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  
+    <div *ngIf="loading" class="row">
+      <div class="col-12 text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3">Cargando información del servicio...</p>
+      </div>
+    </div>
+  
+    <div *ngIf="error" class="row">
+      <div class="col-12">
+        <div class="alert alert-danger">
+          {{ error }}
+        </div>
+        <a routerLink="/servicios" class="btn btn-primary">
+          <i class="bi bi-arrow-left me-2"></i>Volver a Servicios
+        </a>
+      </div>
+    </div>
+  
+    <div *ngIf="!loading && !error && servicio" class="row">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="mb-0">{{ servicio.nombre }}</h4>
+          </div>
+          <div class="card-body">
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <p><strong>Tipo de Servicio:</strong> {{ getTipoServicioTexto() }}</p>
+                <p><strong>Precio:</strong> ${{ (servicio.precio || 0).toFixed(2) }}</p>
+                <p><strong>Estado:</strong> 
+                  <span class="badge" [ngClass]="servicio.activo ? 'bg-success' : 'bg-danger'">
+                    {{ servicio.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </p>
+              </div>
+              <div class="col-md-6">
+                <p *ngIf="servicio.descripcion"><strong>Descripción:</strong> {{ servicio.descripcion }}</p>
+                <p><strong>Fecha de Creación:</strong> {{ servicio.fechaCreacion | date:'dd/MM/yyyy' }}</p>
+                <p *ngIf="servicio.fechaActualizacion"><strong>Última Actualización:</strong> {{ servicio.fechaActualizacion | date:'dd/MM/yyyy' }}</p>
+              </div>
+            </div>
+  
+            <div class="servicio-detalle">
+              <!-- Loading y Error -->
+              <div *ngIf="loading" class="text-center">Cargando...</div>
+              <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+            
+              <!-- Detalles específicos para habitaciones -->
+              <div *ngIf="tipoServicio === 'habitacion' && isServicioHabitacion(servicio)" class="mt-4">
+                <h5 class="mb-3">Detalles de la Habitación</h5>
+                <div class="row">
+                  <div class="col-md-6">
+                    <p><strong>Tipo de Habitación:</strong> {{ servicio.tipoHabitacion | titlecase }}</p>
+                    <p><strong>Capacidad:</strong> {{ servicio.capacidadPersonas || 0 }} persona(s)</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p><strong>Incluye Desayuno:</strong> {{ servicio.incluyeDesayuno ? 'Sí' : 'No' }}</p>
+                    <p *ngIf="servicio.incluyeDesayuno">
+                      <strong>Precio con Desayuno:</strong> ${{ (servicio.precioConDesayuno || 0).toFixed(2) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            
+              <!-- Detalles específicos para eventos -->
+              <div *ngIf="tipoServicio === 'evento' && isServicioEvento(servicio)" class="mt-4">
+                <h5 class="mb-3">Detalles del Salón</h5>
+                <div class="row">
+                  <div class="col-md-6">
+                    <p><strong>Tipo de Salón:</strong> {{ servicio.tipoSalon }}</p>
+                    <p><strong>Capacidad Máxima:</strong> {{ servicio.capacidadMaxima || 0 }} persona(s)</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p><strong>Equipo Incluido:</strong></p>
+                    <ul>
+                      <li *ngFor="let equipo of servicio.equipoIncluido || []">{{ equipo }}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            
+              <!-- Detalles específicos para banquetes -->
+              <div *ngIf="tipoServicio === 'banquete' && isServicioBanquete(servicio)" class="mt-4">
+                <h5 class="mb-3">Detalles del Banquete</h5>
+                <div class="row">
+                  <div class="col-md-6">
+                    <p><strong>Tipo de Banquete:</strong> {{ servicio.tipoBanquete | titlecase }}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p><strong>Precio por Persona:</strong> ${{ (servicio.precioUnitario || 0).toFixed(2) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Acciones</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <a [routerLink]="['/servicios/editar', servicio.id]" class="btn btn-outline-primary">
+                <i class="bi bi-pencil me-2"></i>Editar Servicio
+              </a>
+              <a routerLink="/servicios/reserva" class="btn btn-success">
+                <i class="bi bi-calendar-plus me-2"></i>Reservar Servicio
+              </a>
+              <button class="btn btn-outline-danger">
+                <i class="bi bi-trash me-2"></i>Eliminar Servicio
+              </button>
+            </div>
+          </div>
+        </div>
+  
+        <div class="card">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Información Adicional</h5>
+          </div>
+          <div class="card-body">
+            <p class="mb-2"><i class="bi bi-info-circle me-2"></i>Los precios mostrados incluyen IVA.</p>
+            <p class="mb-2"><i class="bi bi-info-circle me-2"></i>Tarifas actualizadas para 2025.</p>
+            <p class="mb-0" *ngIf="tipoServicio === 'evento'">
+              <i class="bi bi-info-circle me-2"></i>Promociones especiales disponibles para eventos sociales.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

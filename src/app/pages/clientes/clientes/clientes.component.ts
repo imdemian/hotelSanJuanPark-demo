@@ -77,17 +77,12 @@ export class ClientesComponent implements OnInit {
     this.modoEditar = false;
     this.clienteEditandoId = null;
     this.clienteForm.reset();
-    this.inicializarModal();
   }
-
+  
   abrirModalEditar(cliente: Cliente): void {
     this.modoEditar = true;
     this.clienteEditandoId = cliente.id || null;
-    
-    // Formatear fechas correctamente
-    const fechaReservaFormateada = this.formatDateForInput(cliente.fechaReserva);
-    const fechaEstanciaFormateada = this.formatDateForInput(cliente.fechaEstancia);
-    
+  
     this.clienteForm.setValue({
       nombre: cliente.nombre || '',
       edad: cliente.edad || '',
@@ -100,20 +95,39 @@ export class ClientesComponent implements OnInit {
       costoReserva: cliente.costoReserva || '',
       habitacion: cliente.habitacion || '',
       numPersonas: cliente.numPersonas || 1,
-      fechaReserva: fechaReservaFormateada,
-      fechaEstancia: fechaEstanciaFormateada,
+      fechaReserva: this.formatDateForInput(cliente.fechaReserva),
+      fechaEstancia: this.formatDateForInput(cliente.fechaEstancia),
       frecuenciaCompra: cliente.frecuenciaCompra || 1,
       fechasEspeciales: cliente.fechasEspeciales || ''
     });
-    
-    this.inicializarModal();
   }
+  
 
   inicializarModal(): void {
     setTimeout(() => {
       const modalEl = document.getElementById('modalAgregarCliente');
       if (modalEl) {
-        this.modalInstance = new bootstrap.Modal(modalEl);
+        // Cierra cualquier modal existente primero
+        if (this.modalInstance) {
+          this.modalInstance.hide();
+        }
+        
+        // Crea nueva instancia
+        this.modalInstance = new bootstrap.Modal(modalEl, {
+          backdrop: true, // Fondo oscuro
+          keyboard: true  // Permite cerrar con ESC
+        });
+        
+        // Maneja eventos de cierre
+        modalEl.addEventListener('hidden.bs.modal', () => {
+          this.clienteForm.reset();
+          this.modoEditar = false;
+          this.clienteEditandoId = null;
+        
+          // Forzamos actualización del array para evitar estilos grises residuales
+          this.clientes = [...this.clientes];        
+        });
+        
         this.modalInstance.show();
       }
     }, 100);
@@ -236,4 +250,27 @@ export class ClientesComponent implements OnInit {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+
+  // En clientes.component.ts
+get topClientesFrecuencia(): Cliente[] {
+  return [...this.clientes]
+    .sort((a, b) => (b.frecuenciaCompra || 0) - (a.frecuenciaCompra || 0))
+    .slice(0, 3); // Mostrar top 3
+}
+
+get topClientesValor(): Cliente[] {
+  return [...this.clientes]
+    .sort((a, b) => (b.costoReserva || 0) - (a.costoReserva || 0))
+    .slice(0, 3); // Mostrar top 3
+}
+
+getMembresiaBadgeClass(membresia: string): string {
+  switch(membresia) {
+    case 'VIP': return 'bg-warning';
+    case 'Premier': return 'bg-primary';
+    case 'Tradicional': return 'bg-success';
+    default: return 'bg-secondary';
+  }
+}
+
 }

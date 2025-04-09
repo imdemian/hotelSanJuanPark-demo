@@ -19,7 +19,7 @@
       <i class="bi bi-house-door"></i>
       <span *ngIf="!isCollapsed">Inicio</span>
     </a>
-    <a routerLink="/clientes" routerLinkActive="active">
+    <a routerLink="clientes" routerLinkActive="active">
       <i class="bi bi-people"></i>
       <span *ngIf="!isCollapsed">Clientes</span>
     </a>
@@ -27,17 +27,21 @@
       <i class="bi bi-calendar-check"></i>
       <span *ngIf="!isCollapsed">Reservaciones</span>
     </a>
-    <a routerLink="/habitaciones" routerLinkActive="active">
-      <i class="bi bi-door-closed"></i>
-      <span *ngIf="!isCollapsed">Habitaciones</span>
+    <a routerLink="/ordenesdecompra" routerLinkActive="active">
+      <i class="bi bi-cart-check"></i>
+      <span *ngIf="!isCollapsed">Ordenes Compra</span>
     </a>
-    <a routerLink="/proveedores" routerLinkActive="active">
+    <a routerLink="proveedores" routerLinkActive="active">
       <i class="bi bi-truck"></i>
       <span *ngIf="!isCollapsed">Proveedores</span>
     </a>
-    <a routerLink="/empleados" routerLinkActive="active">
+    <a routerLink="empleados" routerLinkActive="active">
       <i class="bi bi-person-badge"></i>
       <span *ngIf="!isCollapsed">Empleados</span>
+    </a>
+    <a routerLink="servicios" routerLinkActive="active">
+      <i class="bi bi-cart"></i>
+      <span *ngIf="!isCollapsed">Servicios</span>
     </a>
   </div>
 
