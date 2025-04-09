@@ -144,7 +144,7 @@
                 [hidden]="
                   !cliente.nombre
                     ?.toLowerCase()
-                    .includes(busquedaCliente?.toLowerCase() || '')
+                    .includes(busquedaCliente.toLowerCase() || '')
                 "
                 (click)="seleccionarCliente(cliente)"
               >
