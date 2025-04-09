@@ -5,6 +5,7 @@ import {
   Validators,
   ReactiveFormsModule,
   FormsModule,
+  FormControl,
 } from '@angular/forms';
 import { CommonModule, isPlatformBrowser, NgIf, NgFor } from '@angular/common';
 import { Modal } from 'bootstrap';
@@ -12,6 +13,10 @@ import {
   ReservacionService,
   Reservacion,
 } from '../../services/reservaciones/reservaciones.service';
+import { Cliente } from '../../models/cliente.model';
+import { ClienteService } from '../../services/clientes/cliente.service';
+import { Servicio } from '../../models/servicio.model';
+import { ServiciosService } from '../../services/servicios/servicios.service';
 
 @Component({
   selector: 'app-reservaciones',
@@ -23,10 +28,14 @@ import {
 export class ReservacionesComponent implements OnInit {
   reservaciones: Reservacion[] = [];
   reservacionForm!: FormGroup;
+  clientes: Cliente[] = []; // Simulado o traído desde otro servicio
+  servicios: Servicio[] = []; // Simulado o traído desde otro servicio
   cargando = true;
   modoEditar = false;
   busquedaCliente = '';
-  clientes: any[] = []; // Simulado o traído desde otro servicio
+
+  // FormControl para la selección de cliente (valor = nombre del cliente)
+  clienteSeleccionadoControl: FormControl = new FormControl('');
 
   habitaciones = [
     { id: '1', nombre: 'Sencilla' },
@@ -54,6 +63,8 @@ export class ReservacionesComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private reservacionService: ReservacionService,
+    private clienteService: ClienteService,
+    private servicioService: ServiciosService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -68,6 +79,10 @@ export class ReservacionesComponent implements OnInit {
     this.reservacionForm.valueChanges.subscribe(() => {
       this.calcularTotal();
     });
+
+    this.cargarClientes();
+
+    this.cargarServicios();
   }
 
   inicializarFormulario() {
@@ -86,6 +101,23 @@ export class ReservacionesComponent implements OnInit {
       total: [0],
       estado: ['Pendiente'],
       formaPago: [''],
+    });
+
+    // Suscripción al FormControl de selección de cliente:
+    this.clienteSeleccionadoControl.valueChanges.subscribe((nombre: string) => {
+      if (nombre) {
+        // Busca el cliente cuyo nombre (único) se seleccionó
+        const cliente = this.clientes.find((c) => c.nombre === nombre);
+        if (cliente) {
+          console.log('Cliente seleccionado:', cliente);
+          // Actualiza los campos del formulario de reservación con datos del cliente
+          this.reservacionForm.patchValue({
+            nombreCliente: cliente.nombre,
+            telefono: cliente.telefono,
+            correo: cliente.correo,
+          });
+        }
+      }
     });
   }
 
@@ -178,6 +210,21 @@ export class ReservacionesComponent implements OnInit {
     // Opcional
   }
 
+  cargarClientes(): void {
+    this.cargando = true;
+    this.clienteService.getClientes().subscribe({
+      next: (data) => {
+        console.log('clientes cargados:', data);
+        this.clientes = data;
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar clientes:', err);
+        this.cargando = false;
+      },
+    });
+  }
+
   seleccionarCliente(cliente: any): void {
     this.reservacionForm.patchValue({
       nombreCliente: cliente.nombre,
@@ -187,6 +234,44 @@ export class ReservacionesComponent implements OnInit {
     this.busquedaCliente = '';
   }
 
+  filtroBusquedaClientes: string = '';
+  // Getter para obtener los clientes filtrados
+  get clientesFiltrados(): Cliente[] {
+    if (
+      !this.filtroBusquedaClientes ||
+      this.filtroBusquedaClientes.trim() === ''
+    ) {
+      return this.clientes; // Si no hay filtro, se muestran todos
+    }
+    const busqueda = this.filtroBusquedaClientes.toLowerCase().trim();
+    return this.clientes.filter(
+      (cliente) =>
+        cliente.nombre.toLowerCase().includes(busqueda) ||
+        (cliente.telefono && cliente.telefono.toLowerCase().includes(busqueda))
+    );
+  }
+
+  cargarServicios(): void {
+    this.cargando = true;
+    this.servicioService.getServicios().subscribe({
+      next: (data) => {
+        console.log('servicios cargados:', data);
+        this.servicios = data;
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar servicios:', err);
+        this.cargando = false;
+      },
+    });
+  }
+
+  // Getter para obtener los tipos de servicio únicos del array de servicios
+  get tiposServiciosUnicos(): string[] {
+    const tipos = this.servicios.map((servicio) => servicio.tipoServicio);
+    return Array.from(new Set(tipos));
+  }
+
   get reservacionesFiltradas(): Reservacion[] {
     const filtro = this.filtroBusqueda?.toLowerCase() || '';
     return this.reservaciones.filter(
@@ -194,6 +279,17 @@ export class ReservacionesComponent implements OnInit {
         r.nombreCliente.toLowerCase().includes(filtro) ||
         r.tipoServicio.toLowerCase().includes(filtro)
     );
+  }
+
+  get opcionesServicio(): any[] {
+    const tipo = this.reservacionForm.get('tipoServicio')?.value;
+    if (tipo) {
+      // Se filtran los servicios que tengan un tipoServicio igual al seleccionado
+      return this.servicios.filter(
+        (s) => s.tipoServicio.toLowerCase() === tipo.toLowerCase()
+      );
+    }
+    return [];
   }
 
   filtroBusqueda = '';

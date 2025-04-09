@@ -44,7 +44,7 @@
                 {{
                   r.tipoServicio === "habitacion"
                     ? getNombreHabitacion(r.habitacionId!)
-                    : getNombreSalon(r.salonId!)
+                    : "Habitación"
                 }}
               </td>
               <td>
@@ -120,37 +120,43 @@
         </div>
 
         <div class="modal-body row g-3">
-          <div class="col-md-4">
-            <label class="form-label">Tipo de servicio</label>
-            <select class="form-select" formControlName="tipoServicio">
-              <option value="habitacion">Habitación</option>
-              <option value="salon">Salón de eventos</option>
-            </select>
-          </div>
-
           <div class="col-md-12">
-            <label for="buscarCliente" class="form-label">Buscar cliente</label>
-            <input
-              type="text"
-              class="form-control mb-2"
-              [(ngModel)]="busquedaCliente"
-              name="buscarCliente"
-              (input)="aplicarCliente()"
-            />
-            <ul class="list-group" *ngIf="busquedaCliente">
-              <li
-                class="list-group-item list-group-item-action"
-                *ngFor="let cliente of clientes | slice : 0"
-                [hidden]="
-                  !cliente.nombre
-                    ?.toLowerCase()
-                    .includes(busquedaCliente?.toLowerCase() || '')
-                "
-                (click)="seleccionarCliente(cliente)"
+            <!-- Barra de búsqueda -->
+            <h6>Paso 1: Elegir al cliente</h6>
+            <div class="input-group mb-3">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Buscar clientes..."
+                [(ngModel)]="filtroBusquedaClientes"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+
+            <!-- Contenedor para seleccionar cliente -->
+            <div class="mt-3">
+              <label for="selectCliente" class="form-label"
+                >Selecciona un cliente</label
               >
-                {{ cliente.nombre }} - {{ cliente.telefono }}
-              </li>
-            </ul>
+              <select
+                id="selectCliente"
+                class="form-select"
+                [formControl]="clienteSeleccionadoControl"
+              >
+                <option value="" disabled selected>
+                  -- Seleccione un cliente --
+                </option>
+                <option
+                  *ngFor="let cliente of clientesFiltrados"
+                  [value]="cliente.nombre"
+                >
+                  {{ cliente.nombre }} - {{ cliente.telefono }}
+                </option>
+              </select>
+            </div>
           </div>
 
           <div class="col-md-4">
@@ -176,6 +182,16 @@
             <input formControlName="correo" class="form-control" type="email" />
           </div>
 
+          <div class="col-md-4">
+            <label class="form-label">Tipo de servicio</label>
+            <select class="form-select" formControlName="tipoServicio">
+              <option value="" disabled>Seleccione un servicio...</option>
+              <option *ngFor="let tipo of tiposServiciosUnicos" [value]="tipo">
+                {{ tipo | titlecase }}
+              </option>
+            </select>
+          </div>
+
           <div *ngIf="esHabitacion()" class="row g-2">
             <div class="col-md-6">
               <label>Fecha entrada</label>
@@ -194,10 +210,27 @@
               />
             </div>
             <div class="col-md-6">
-              <label>Habitación</label>
-              <select class="form-select" formControlName="habitacionId">
-                <option *ngFor="let h of habitaciones" [value]="h.id">
-                  {{ h.nombre }}
+              <label class="form-label">
+                {{
+                  reservacionForm.get("tipoServicio")?.value === "habitacion"
+                    ? "Habitación"
+                    : "Salón"
+                }}
+              </label>
+              <!-- Usamos un solo bloque; si el tipo es "habitacion" se usa el control "habitacionId", si no, "salonId". -->
+              <select
+                class="form-select"
+                [formControlName]="
+                  reservacionForm.get('tipoServicio')?.value === 'habitacion'
+                    ? 'habitacionId'
+                    : 'salonId'
+                "
+              >
+                <option value="" disabled selected>
+                  Seleccione una opción
+                </option>
+                <option *ngFor="let s of opcionesServicio" [value]="s.nombre">
+                  {{ s.nombre }}
                 </option>
               </select>
             </div>

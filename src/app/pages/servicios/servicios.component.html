@@ -1,0 +1,203 @@
+<!-- Card de Servicios -->
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Servicios</h5>
+      <button
+        class="btn btn-success btn-sm"
+        data-bs-toggle="modal"
+        data-bs-target="#modalServicio"
+        (click)="abrirModalNuevo()"
+      >
+        <i class="bi bi-plus-circle me-1"></i> Nuevo Servicio
+      </button>
+    </div>
+
+    <div class="card-body">
+      <!-- Filtro select -->
+      <div class="mb-3">
+        <label for="filtroTipo" class="form-label"
+          >Filtrar por Tipo de Servicio:</label
+        >
+        <select
+          id="filtroTipo"
+          class="form-select"
+          [(ngModel)]="filtroTipo"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option value="todo">Todo</option>
+          <option value="habitacion">Habitación</option>
+          <option value="salon">Salón</option>
+          <option value="banquete">Banquete</option>
+        </select>
+      </div>
+
+      <!-- Spinner -->
+      <div *ngIf="cargando" class="text-center py-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando servicios...</p>
+      </div>
+
+      <!-- Tabla de Servicios -->
+      <div
+        *ngIf="!cargando && serviciosFiltrados.length > 0; else sinServicios"
+      >
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Tipo de Servicio</th>
+              <th>Nombre</th>
+              <th>Capacidad</th>
+              <th>Precio</th>
+              <th>Precio Adicional</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let servicio of serviciosFiltrados">
+              <td>{{ servicio.id }}</td>
+              <td>{{ servicio.tipoServicio }}</td>
+              <td>{{ servicio.nombre }}</td>
+              <td>{{ servicio.capacidad || "-" }}</td>
+              <td>{{ servicio.precio | currency }}</td>
+              <td>
+                {{
+                  servicio.precioAdicional
+                    ? (servicio.precioAdicional | currency)
+                    : "-"
+                }}
+              </td>
+              <td>
+                <button
+                  class="btn btn-sm btn-outline-primary me-2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalServicio"
+                  (click)="abrirModalEditar(servicio)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="eliminarServicio(servicio.id!)"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #sinServicios>
+        <div *ngIf="!cargando" class="alert alert-warning">
+          No hay servicios registrados.
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para registrar/editar Servicios -->
+<div class="modal fade" id="modalServicio" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="servicioForm" (ngSubmit)="guardarServicio()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            {{ modoEditarServicio ? "Editar Servicio" : "Nuevo Servicio" }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Cerrar"
+          ></button>
+        </div>
+        <div class="modal-body row g-3">
+          <!-- Tipo de Servicio -->
+          <div class="col-md-6">
+            <label class="form-label">Tipo de Servicio</label>
+            <select class="form-select" formControlName="tipoServicio" required>
+              <option value="">Selecciona un tipo...</option>
+              <option value="habitacion">Habitación</option>
+              <option value="salon">Salón</option>
+              <option value="banquete">Banquete</option>
+            </select>
+          </div>
+          <!-- Nombre -->
+          <div class="col-md-6">
+            <label class="form-label">Nombre</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="nombre"
+              required
+            />
+          </div>
+          <!-- Descripción -->
+          <div class="col-md-6">
+            <label class="form-label">Descripción</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="descripcion"
+            />
+          </div>
+          <!-- Capacidad -->
+          <div class="col-md-6">
+            <label class="form-label">Capacidad</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="capacidad"
+            />
+          </div>
+          <!-- Precio -->
+          <div class="col-md-6">
+            <label class="form-label">Precio</label>
+            <input
+              type="number"
+              class="form-control"
+              formControlName="precio"
+              required
+            />
+          </div>
+          <!-- Precio Adicional -->
+          <div class="col-md-6">
+            <label class="form-label">Precio Adicional</label>
+            <input
+              type="number"
+              class="form-control"
+              formControlName="precioAdicional"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="servicioForm.invalid || guardandoServicio"
+          >
+            <span
+              *ngIf="guardandoServicio"
+              class="spinner-border spinner-border-sm me-1"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            {{ modoEditarServicio ? "Actualizar" : "Guardar" }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -15,21 +15,21 @@
   </div>
 
   <div class="sidebar-links">
-    <a routerLink="/dashboard" routerLinkActive="active">
-      <i class="bi bi-house-door"></i>
-      <span *ngIf="!isCollapsed">Inicio</span>
+    <a routerLink="/reservaciones" routerLinkActive="active">
+      <i class="bi bi-calendar-check"></i>
+      <span *ngIf="!isCollapsed">Reservaciones</span>
     </a>
     <a routerLink="clientes" routerLinkActive="active">
       <i class="bi bi-people"></i>
       <span *ngIf="!isCollapsed">Clientes</span>
     </a>
-    <a routerLink="/reservaciones" routerLinkActive="active">
-      <i class="bi bi-calendar-check"></i>
-      <span *ngIf="!isCollapsed">Reservaciones</span>
+    <a routerLink="/servicios" routerLinkActive="active">
+      <i class="bi bi-bag-check"></i>
+      <span *ngIf="!isCollapsed">Servicios</span>
     </a>
-    <a routerLink="/habitaciones" routerLinkActive="active">
+    <a routerLink="/ordenesdecompra" routerLinkActive="active">
       <i class="bi bi-door-closed"></i>
-      <span *ngIf="!isCollapsed">Habitaciones</span>
+      <span *ngIf="!isCollapsed">Ordenes Compra</span>
     </a>
     <a routerLink="proveedores" routerLinkActive="active">
       <i class="bi bi-truck"></i>
@@ -42,8 +42,8 @@
   </div>
 
   <div class="logout" *ngIf="!isCollapsed">
-    <button class="btn btn-danger w-100 mt-4">
+    <!-- <button class="btn btn-danger w-100 mt-4">
       <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
-    </button>
+    </button> -->
   </div>
 </div>
