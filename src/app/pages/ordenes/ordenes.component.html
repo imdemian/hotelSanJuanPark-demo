@@ -1,0 +1,213 @@
+<div class="container py-4">
+    <!-- Tarjeta principal para Órdenes de Compra -->
+    <div class="card shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Órdenes de Compra</h5>
+        <button class="btn btn-success btn-sm"
+                data-bs-toggle="modal" data-bs-target="#modalOrden"
+                (click)="abrirModalNuevo()">
+          <i class="bi bi-plus-circle me-1"></i> Nueva Orden
+        </button>
+      </div>
+  
+      <!-- Filtro por estado -->
+      <div class="input-group mb-3">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control"
+               placeholder="Filtrar por estado (pendiente, aprobada, rechazada)..."
+               [(ngModel)]="filtroEstado">
+      </div>
+  
+      <div class="card-body">
+        <!-- Historial de órdenes -->
+        <div *ngIf="!cargando && ordenes.length > 0; else sinOrdenes">
+          <table class="table table-bordered align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Proveedor</th>
+                <th>Productos</th>
+                <th>Fecha Creación</th>
+                <th>Estado</th>
+                <th>Comentario</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let orden of ordenesFiltradas">
+                <td>{{ getNombreProveedor(orden.proveedorId) }}</td>
+                <td>{{ orden.productos }}</td>
+                <td>{{ orden.fechaCreacion | date:'short' }}</td>
+                <td>
+                    <span
+                        class="badge px-3 py-2 fw-bold"
+                        [ngClass]="{
+                            'bg-success text-white': orden.estado === 'aprobada',
+                            'bg-warning text-dark': orden.estado === 'pendiente',
+                            'bg-danger text-white': orden.estado === 'rechazada'
+                            }"
+                        >
+                             {{ orden.estado | titlecase }}
+                            </span>      
+                </td>
+                <td>{{ orden.comentario || 'N/A' }}</td>
+                <td>
+                  <!-- Botón de editar -->
+                  <button class="btn btn-sm btn-outline-primary me-2"
+                          data-bs-toggle="modal" data-bs-target="#modalOrden"
+                          (click)="abrirModalEditar(orden)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <!-- Botón de aprobar si está pendiente -->
+                  <button *ngIf="orden.estado === 'pendiente'" 
+                          class="btn btn-sm btn-outline-success me-2"
+                          (click)="aprobarOrden(orden)">
+                    <i class="bi bi-check-circle"></i>
+                  </button>
+                  <!-- Botón de rechazar si está pendiente -->
+                  <button *ngIf="orden.estado === 'pendiente'" 
+                          class="btn btn-sm btn-outline-danger me-2"
+                          data-bs-toggle="modal" data-bs-target="#modalRechazo"
+                          (click)="abrirModalRechazo(orden)">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                  <!-- Botón de borrar orden, siempre visible -->
+                  <button class="btn btn-sm btn-outline-dark"
+                          data-bs-toggle="modal" data-bs-target="#modalEliminar"
+                          (click)="abrirModalEliminar(orden)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+  
+        <ng-template #sinOrdenes>
+          <div class="alert alert-warning">No hay órdenes registradas.</div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal para Agregar/Editar Orden -->
+  <div class="modal fade" id="modalOrden" tabindex="-1" aria-labelledby="modalOrdenLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form [formGroup]="ordenForm" (ngSubmit)="guardarOrden()">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalOrdenLabel">
+              {{ modoEditar ? 'Editar Orden de Compra' : 'Nueva Orden de Compra' }}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+  
+          <div class="modal-body row g-3">
+            <!-- Selección de Proveedor -->
+            <div class="col-md-6">
+              <label for="proveedorId" class="form-label">Proveedor <span class="text-danger">*</span></label>
+              <select id="proveedorId" class="form-select" formControlName="proveedorId">
+                <option value="">Seleccione un proveedor</option>
+                <option *ngFor="let prov of proveedores" [value]="prov.id">{{ prov.nombre }}</option>
+              </select>
+              <div *ngIf="ordenForm.get('proveedorId')?.touched && ordenForm.get('proveedorId')?.invalid" class="text-danger">
+                El proveedor es obligatorio.
+              </div>
+            </div>
+            <!-- Productos -->
+            <div class="col-md-6">
+              <label for="productos" class="form-label">Productos <span class="text-danger">*</span></label>
+              <input id="productos" type="text" class="form-control" formControlName="productos" placeholder="Listado de productos">
+              <div *ngIf="ordenForm.get('productos')?.touched && ordenForm.get('productos')?.invalid" class="text-danger">
+                Es necesario ingresar los productos.
+              </div>
+            </div>
+            <!-- Fecha de Creación -->
+            <div class="col-md-4">
+              <label for="fechaCreacion" class="form-label">Fecha Creación <span class="text-danger">*</span></label>
+              <input id="fechaCreacion" type="date" class="form-control" formControlName="fechaCreacion">
+              <div *ngIf="ordenForm.get('fechaCreacion')?.touched && ordenForm.get('fechaCreacion')?.invalid" class="text-danger">
+                La fecha es obligatoria.
+              </div>
+            </div>
+            <!-- Estado -->
+            <div class="col-md-4">
+              <label for="estado" class="form-label">Estado <span class="text-danger">*</span></label>
+              <select id="estado" class="form-select" formControlName="estado">
+                <option value="pendiente">Pendiente</option>
+                <option value="aprobada">Aprobada</option>
+                <option value="rechazada">Rechazada</option>
+              </select>
+              <div *ngIf="ordenForm.get('estado')?.touched && ordenForm.get('estado')?.invalid" class="text-danger">
+                El estado es obligatorio.
+              </div>
+            </div>
+            <!-- Comentario -->
+            <div class="col-md-4">
+              <label for="comentario" class="form-label">Comentario</label>
+              <input id="comentario" type="text" class="form-control" formControlName="comentario" placeholder="Comentario (opcional)">
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-success" [disabled]="ordenForm.invalid" data-bs-dismiss="modal">
+              {{ modoEditar ? 'Actualizar Orden' : 'Guardar Orden' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal para Rechazo de Orden (Ingresar Comentario) -->
+  <div class="modal fade" id="modalRechazo" tabindex="-1" aria-labelledby="modalRechazoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="modalRechazoLabel">Rechazar Orden</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="comentarioRechazo" class="form-label">Comentario <span class="text-danger">*</span></label>
+            <input id="comentarioRechazo" type="text" class="form-control" placeholder="Motivo del rechazo" #comentarioInput>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger"
+                  (click)="rechazarOrden(ordenSeleccionada!, comentarioInput.value); ordenSeleccionada = null"
+                  data-bs-dismiss="modal">
+            Rechazar Orden
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal para Confirmar Eliminación de Orden (estilo similar al modal de agregar/editar) -->
+  <div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title" id="modalEliminarLabel">Confirmar Eliminación de Orden</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            ¿Está seguro de que desea eliminar la orden de compra de 
+            <strong>{{ getNombreProveedor(ordenEliminar?.proveedorId) }}</strong>?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-dark" (click)="confirmarEliminarOrden()" data-bs-dismiss="modal">
+            Eliminar Orden
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
