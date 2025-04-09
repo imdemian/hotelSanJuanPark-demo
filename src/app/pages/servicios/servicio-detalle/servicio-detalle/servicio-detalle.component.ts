@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { ActivatedRoute, RouterModule } from "@angular/router";
 import { ServiciosService } from "../../../../services/servicios/servicios.service";
 import { Servicio, ServicioHabitacion, ServicioEvento, ServicioBanquete, TipoServicio } from "../../../../models/servicios.model";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-servicio-detalle",
@@ -21,7 +22,8 @@ export class ServicioDetalleComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private serviciosService: ServiciosService
+    private serviciosService: ServiciosService,
+    private router: Router 
   ) {}
 
   ngOnInit(): void {
@@ -111,4 +113,22 @@ export class ServicioDetalleComponent implements OnInit {
     }
   }
   
+   // Métodos para manejar las acciones
+   editarServicio(): void {
+    if (this.servicio && this.servicio.id) {
+      this.router.navigate(["/servicios/editar", this.servicio.id]);
+    }
+  }
+  
+  reservarServicio(): void {
+    if (this.servicio && this.servicio.id) {
+      this.router.navigate(["/servicios/reserva"], {
+        queryParams: {
+          id: this.servicio.id,
+          tipo: this.tipoServicio,
+        },
+      });
+    }
+  }
 }
+    

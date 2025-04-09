@@ -243,18 +243,20 @@
             
             <div class="alert alert-info" *ngIf="cantidadPersonas > 0 && servicioSeleccionado">
               <strong>Subtotal:</strong> ${{ calcularSubtotal().toFixed(2) }}
-              <small class="d-block" *ngIf="servicioSeleccionado?.tipo === 'banquete'">
-                {{ cantidadPersonas }} personas x ${{ (servicioSeleccionado?.precioUnitario || 0).toFixed(2) }}
+              <small class="d-block" *ngIf="servicioSeleccionado.tipo === 'banquete'">
+                {{ cantidadPersonas }} personas x ${{ (servicioSeleccionado.precioUnitario || 0).toFixed(2) }}
               </small>
             </div>
             
             <div class="mt-3">
+              <div class="botones-inferiores">
               <button class="btn btn-secondary me-2" (click)="volverPaso()">
                 <i class="bi bi-arrow-left me-2"></i>Volver
               </button>
               <button class="btn btn-primary" (click)="pasoActual = 5" [disabled]="cantidadPersonas <= 0">
                 Continuar<i class="bi bi-arrow-right ms-2"></i>
               </button>
+            </div>
             </div>
           </div>
 
@@ -344,8 +346,8 @@
                   <div>
                     <h6 class="mb-1">{{ item.servicio.nombre }}</h6>
                     <p class="mb-1 text-muted">
-                      <span *ngIf="item.servicio?.tipo === 'banquete'">
-                        {{ item.cantidad }} personas x ${{ (item.servicio?.precioUnitario || 0).toFixed(2) }}
+                      <span *ngIf="item.servicio.tipo === 'banquete'">
+                        {{ item.cantidad }} personas x ${{ (item.servicio.precioUnitario || 0).toFixed(2) }}
                       </span>
                       <span *ngIf="item.servicio.tipo !== 'banquete'">
                         {{ item.cantidad }} x ${{ item.servicio.precio.toFixed(2) }}

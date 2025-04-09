@@ -114,16 +114,31 @@
                 </div>
                 <div class="card-body">
                   <div class="d-flex gap-2">
-                    <a [routerLink]="['/servicios/editar', servicio.id]" class="btn btn-outline-primary flex-grow-1">
+                    <button class="btn btn-outline-primary flex-grow-1" (click)="editarServicio()">
                       <i class="bi bi-pencil me-2"></i>Editar Servicio
-                    </a>
-                    <a routerLink="/servicios/reserva" class="btn btn-success flex-grow-1">
-                      <i class="bi bi-calendar-plus me-2"></i>Reservar Servicio
-                    </a>
-                    <button class="btn btn-outline-danger flex-grow-1">
-                      <i class="bi bi-trash me-2"></i>Eliminar Servicio
                     </button>
+                  
+                    <button class="btn btn-success flex-grow-1" (click)="reservarServicio()">
+                      <i class="bi bi-calendar-plus me-2"></i>Reservar Servicio
+                    </button>
+                  </div>                  
                   </div>
                 </div>
               </div>
+        
+              <div class="card">
+                <div class="card-header bg-info text-white">
+                  <h5 class="mb-0">Información Adicional</h5>
+                </div>
+                <div class="card-body">
+                  <p class="mb-2"><i class="bi bi-info-circle me-2"></i>Los precios mostrados incluyen IVA.</p>
+                  <p class="mb-2"><i class="bi bi-info-circle me-2"></i>Tarifas actualizadas para 2025.</p>
+                  <p class="mb-0" *ngIf="tipoServicio === 'evento'">
+                    <i class="bi bi-info-circle me-2"></i>Promociones especiales disponibles para eventos sociales.
+                  </p>
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+        
