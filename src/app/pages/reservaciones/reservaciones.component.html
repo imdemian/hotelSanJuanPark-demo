@@ -1,0 +1,309 @@
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Reservaciones</h5>
+      <button
+        class="btn btn-success btn-sm"
+        data-bs-toggle="modal"
+        data-bs-target="#modalReservacion"
+        (click)="abrirModalNuevo()"
+      >
+        <i class="bi bi-plus-circle me-1"></i> Nueva reservación
+      </button>
+    </div>
+
+    <div class="input-group m-3">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Buscar por cliente o servicio..."
+        [(ngModel)]="filtroBusqueda"
+      />
+    </div>
+
+    <div class="card-body">
+      <div
+        *ngIf="!cargando && reservacionesFiltradas.length > 0; else sinDatos"
+      >
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Cliente</th>
+              <th>Servicio</th>
+              <th>Fecha</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of reservacionesFiltradas">
+              <td>{{ r.nombreCliente }}</td>
+              <td>
+                {{
+                  r.tipoServicio === "habitacion"
+                    ? getNombreHabitacion(r.habitacionId!)
+                    : getNombreSalon(r.salonId!)
+                }}
+              </td>
+              <td>
+                {{
+                  r.tipoServicio === "habitacion"
+                    ? r.fechaEntrada
+                    : r.fechaEvento
+                }}
+              </td>
+              <td>${{ r.total }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'bg-secondary': r.estado === 'Pendiente',
+                    'bg-warning': r.estado === 'Parcial',
+                    'bg-success':
+                      r.estado === 'Confirmada' || r.estado === 'Pagado',
+                    'bg-danger': r.estado === 'Cancelada'
+                  }"
+                >
+                  {{ r.estado }}
+                </span>
+              </td>
+              <td>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="eliminarReservacion(r.id!)"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-primary me-2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalReservacion"
+                  (click)="abrirModalEditar(r)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #sinDatos>
+        <div class="alert alert-info">No hay reservaciones registradas.</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="modalReservacion"
+  tabindex="-1"
+  aria-labelledby="modalReservacionLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="reservacionForm" (ngSubmit)="guardarReservacion()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalReservacionLabel">
+            {{ modoEditar ? "Editar" : "Nueva" }} reservación
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Cerrar"
+          ></button>
+        </div>
+
+        <div class="modal-body row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Tipo de servicio</label>
+            <select class="form-select" formControlName="tipoServicio">
+              <option value="habitacion">Habitación</option>
+              <option value="salon">Salón de eventos</option>
+            </select>
+          </div>
+
+          <div class="col-md-12">
+            <label for="buscarCliente" class="form-label">Buscar cliente</label>
+            <input
+              type="text"
+              class="form-control mb-2"
+              [(ngModel)]="busquedaCliente"
+              name="buscarCliente"
+              (input)="aplicarCliente()"
+            />
+            <ul class="list-group" *ngIf="busquedaCliente">
+              <li
+                class="list-group-item list-group-item-action"
+                *ngFor="let cliente of clientes | slice : 0"
+                [hidden]="
+                  !cliente.nombre
+                    ?.toLowerCase()
+                    .includes(busquedaCliente?.toLowerCase() || '')
+                "
+                (click)="seleccionarCliente(cliente)"
+              >
+                {{ cliente.nombre }} - {{ cliente.telefono }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Nombre del cliente</label>
+            <input
+              formControlName="nombreCliente"
+              class="form-control"
+              type="text"
+            />
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Teléfono</label>
+            <input
+              formControlName="telefono"
+              class="form-control"
+              type="text"
+            />
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Correo</label>
+            <input formControlName="correo" class="form-control" type="email" />
+          </div>
+
+          <div *ngIf="esHabitacion()" class="row g-2">
+            <div class="col-md-6">
+              <label>Fecha entrada</label>
+              <input
+                formControlName="fechaEntrada"
+                type="date"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6">
+              <label>Fecha salida</label>
+              <input
+                formControlName="fechaSalida"
+                type="date"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6">
+              <label>Habitación</label>
+              <select class="form-select" formControlName="habitacionId">
+                <option *ngFor="let h of habitaciones" [value]="h.id">
+                  {{ h.nombre }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label>Costo por noche</label>
+              <input
+                class="form-control"
+                type="number"
+                formControlName="costoPorNoche"
+              />
+            </div>
+            <div class="col-md-3">
+              <label>Número de personas</label>
+              <input
+                class="form-control"
+                type="number"
+                formControlName="numeroPersonas"
+              />
+            </div>
+          </div>
+
+          <div *ngIf="esSalon()" class="row g-2">
+            <div class="col-md-6">
+              <label>Fecha del evento</label>
+              <input
+                formControlName="fechaEvento"
+                type="date"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6">
+              <label>Salón</label>
+              <select class="form-select" formControlName="salonId">
+                <option *ngFor="let s of salones" [value]="s.id">
+                  {{ s.nombre }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-12">
+              <label>Promociones</label>
+              <div
+                class="form-check"
+                *ngFor="let promo of promocionesDisponibles"
+              >
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [value]="promo"
+                  [checked]="promocionesSeleccionadas.includes(promo)"
+                  (change)="onPromocionToggle($event, promo)"
+                />
+                <label class="form-check-label">{{ promo }}</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Total</label>
+            <input
+              formControlName="total"
+              type="number"
+              class="form-control"
+              readonly
+            />
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Forma de pago</label>
+            <select class="form-select" formControlName="formaPago">
+              <option value="">Selecciona una opción</option>
+              <option value="Tarjeta">Tarjeta</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Efectivo">Efectivo</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Estado</label>
+            <select class="form-select" formControlName="estado">
+              <option value="Pendiente">Pendiente</option>
+              <option value="Parcial">Parcial</option>
+              <option value="Confirmada">Confirmada</option>
+              <option value="Pagado">Pagado</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-success"
+            [disabled]="reservacionForm.invalid"
+            data-bs-dismiss="modal"
+          >
+            {{ modoEditar ? "Actualizar" : "Guardar" }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
