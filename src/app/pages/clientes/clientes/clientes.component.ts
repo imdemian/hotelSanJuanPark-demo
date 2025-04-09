@@ -1,5 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
 import { ClienteService } from '../../../services/clientes/cliente.service';
 import { Cliente } from '../../../models/cliente.model';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
@@ -11,7 +17,7 @@ declare var bootstrap: any;
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NgIf, NgFor, FormsModule],
   templateUrl: './clientes.component.html',
-  styleUrls: ['./clientes.component.scss']
+  styleUrls: ['./clientes.component.scss'],
 })
 export class ClientesComponent implements OnInit {
   clientes: Cliente[] = [];
@@ -20,7 +26,7 @@ export class ClientesComponent implements OnInit {
   guardando = false;
   modoEditar = false;
   clienteEditandoId: string | null = null;
-  
+
   // Filtros
   filtroBusqueda: string = '';
   filtroEdad: number | null = null;
@@ -55,7 +61,7 @@ export class ClientesComponent implements OnInit {
       fechaReserva: ['', Validators.required],
       fechaEstancia: ['', Validators.required],
       frecuenciaCompra: ['', [Validators.required, Validators.min(1)]],
-      fechasEspeciales: ['']
+      fechasEspeciales: [''],
     });
   }
 
@@ -69,7 +75,7 @@ export class ClientesComponent implements OnInit {
       error: (err) => {
         console.error('Error al cargar clientes:', err);
         this.cargando = false;
-      }
+      },
     });
   }
 
@@ -77,17 +83,12 @@ export class ClientesComponent implements OnInit {
     this.modoEditar = false;
     this.clienteEditandoId = null;
     this.clienteForm.reset();
-    this.inicializarModal();
   }
 
   abrirModalEditar(cliente: Cliente): void {
     this.modoEditar = true;
     this.clienteEditandoId = cliente.id || null;
-    
-    // Formatear fechas correctamente
-    const fechaReservaFormateada = this.formatDateForInput(cliente.fechaReserva);
-    const fechaEstanciaFormateada = this.formatDateForInput(cliente.fechaEstancia);
-    
+
     this.clienteForm.setValue({
       nombre: cliente.nombre || '',
       edad: cliente.edad || '',
@@ -100,20 +101,38 @@ export class ClientesComponent implements OnInit {
       costoReserva: cliente.costoReserva || '',
       habitacion: cliente.habitacion || '',
       numPersonas: cliente.numPersonas || 1,
-      fechaReserva: fechaReservaFormateada,
-      fechaEstancia: fechaEstanciaFormateada,
+      fechaReserva: this.formatDateForInput(cliente.fechaReserva),
+      fechaEstancia: this.formatDateForInput(cliente.fechaEstancia),
       frecuenciaCompra: cliente.frecuenciaCompra || 1,
-      fechasEspeciales: cliente.fechasEspeciales || ''
+      fechasEspeciales: cliente.fechasEspeciales || '',
     });
-    
-    this.inicializarModal();
   }
 
   inicializarModal(): void {
     setTimeout(() => {
       const modalEl = document.getElementById('modalAgregarCliente');
       if (modalEl) {
-        this.modalInstance = new bootstrap.Modal(modalEl);
+        // Cierra cualquier modal existente primero
+        if (this.modalInstance) {
+          this.modalInstance.hide();
+        }
+
+        // Crea nueva instancia
+        this.modalInstance = new bootstrap.Modal(modalEl, {
+          backdrop: true, // Fondo oscuro
+          keyboard: true, // Permite cerrar con ESC
+        });
+
+        // Maneja eventos de cierre
+        modalEl.addEventListener('hidden.bs.modal', () => {
+          this.clienteForm.reset();
+          this.modoEditar = false;
+          this.clienteEditandoId = null;
+
+          // Forzamos actualización del array para evitar estilos grises residuales
+          this.clientes = [...this.clientes];
+        });
+
         this.modalInstance.show();
       }
     }, 100);
@@ -123,30 +142,32 @@ export class ClientesComponent implements OnInit {
     if (this.clienteForm.invalid || this.guardando) return;
 
     this.guardando = true;
-    
+
     const clienteData = {
       ...this.clienteForm.value,
       fechaReserva: new Date(this.clienteForm.value.fechaReserva),
-      fechaEstancia: new Date(this.clienteForm.value.fechaEstancia)
+      fechaEstancia: new Date(this.clienteForm.value.fechaEstancia),
     };
 
     if (this.modoEditar && this.clienteEditandoId) {
       // Actualizar cliente existente
-      this.clienteService.actualizarCliente(this.clienteEditandoId, clienteData)
+      this.clienteService
+        .actualizarCliente(this.clienteEditandoId, clienteData)
         .then(() => {
           this.finalizarGuardado();
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error al actualizar cliente:', error);
           this.guardando = false;
         });
     } else {
       // Agregar nuevo cliente (asegurándose que no es una edición)
-      this.clienteService.agregarCliente(clienteData)
+      this.clienteService
+        .agregarCliente(clienteData)
         .then(() => {
           this.finalizarGuardado();
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error al agregar cliente:', error);
           this.guardando = false;
         });
@@ -159,7 +180,7 @@ export class ClientesComponent implements OnInit {
     this.modoEditar = false;
     this.clienteEditandoId = null;
     this.guardando = false;
-    
+
     if (this.modalInstance) {
       this.modalInstance.hide();
     }
@@ -167,11 +188,12 @@ export class ClientesComponent implements OnInit {
 
   eliminarCliente(id: string): void {
     if (confirm('¿Estás seguro de eliminar este cliente?')) {
-      this.clienteService.eliminarCliente(id)
+      this.clienteService
+        .eliminarCliente(id)
         .then(() => {
           this.cargarClientes();
         })
-        .catch(error => console.error('Error al eliminar:', error));
+        .catch((error) => console.error('Error al eliminar:', error));
     }
   }
 
@@ -188,33 +210,39 @@ export class ClientesComponent implements OnInit {
   }
 
   get clientesFiltrados(): Cliente[] {
-    return this.clientes.filter(cliente => 
-      (!this.filtroBusqueda || 
-       `${cliente.nombre} ${cliente.correo} ${cliente.telefono}`.toLowerCase()
-        .includes(this.filtroBusqueda.toLowerCase())) &&
-      (!this.filtroEdad || cliente.edad === this.filtroEdad) &&
-      (!this.filtroCiudad || cliente.ciudad.toLowerCase()
-        .includes(this.filtroCiudad.toLowerCase())) &&
-      (!this.filtroTipoServicio || cliente.tipoServicio.toLowerCase()
-        .includes(this.filtroTipoServicio.toLowerCase()))
+    return this.clientes.filter(
+      (cliente) =>
+        (!this.filtroBusqueda ||
+          `${cliente.nombre} ${cliente.correo} ${cliente.telefono}`
+            .toLowerCase()
+            .includes(this.filtroBusqueda.toLowerCase())) &&
+        (!this.filtroEdad || cliente.edad === this.filtroEdad) &&
+        (!this.filtroCiudad ||
+          cliente.ciudad
+            .toLowerCase()
+            .includes(this.filtroCiudad.toLowerCase())) &&
+        (!this.filtroTipoServicio ||
+          cliente.tipoServicio
+            .toLowerCase()
+            .includes(this.filtroTipoServicio.toLowerCase()))
     );
   }
 
   private formatDateForInput(date: any): string {
     if (!date) return '';
-    
+
     try {
       // Si es un Timestamp de Firestore (con método toDate)
       if (date && typeof date.toDate === 'function') {
         const jsDate = date.toDate();
         return this.convertDateToInputFormat(jsDate);
       }
-      
+
       // Si ya es un objeto Date
       if (date instanceof Date) {
         return this.convertDateToInputFormat(date);
       }
-      
+
       // Si es un string de fecha
       if (typeof date === 'string') {
         const jsDate = new Date(date);
@@ -222,7 +250,7 @@ export class ClientesComponent implements OnInit {
           return this.convertDateToInputFormat(jsDate);
         }
       }
-      
+
       return '';
     } catch (error) {
       console.error('Error al formatear fecha:', error);
