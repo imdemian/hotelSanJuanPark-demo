@@ -1,0 +1,185 @@
+<div class="container py-4">
+    <!-- Card con tabla -->
+    <div class="card shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Usuarios</h5>
+        <button
+          class="btn btn-success btn-sm"
+          data-bs-toggle="modal"
+          data-bs-target="#modalAgregarUsuario"
+          (click)="abrirModalNuevo()"
+        >
+          <i class="bi bi-plus-circle me-1"></i>Agregar usuario
+        </button>
+      </div>
+  
+      <div class="input-group mb-3">
+        <span class="input-group-text">
+          <i class="bi bi-search"></i>
+        </span>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar usuario..."
+          [(ngModel)]="filtroBusqueda"
+        />
+      </div>
+  
+      <div class="card-body">
+        <!-- Tabla de usuarios -->
+        <div *ngIf="!cargando && usuarios.length > 0; else sinUsuarios">
+          <table class="table table-bordered align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Activo</th>
+                <th>Fecha Registro</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let usuario of usuariosFiltrados">
+                <td>{{ usuario.usuario }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>{{ usuario.rol }}</td>
+                <td>{{ usuario.activo ? 'Sí' : 'No' }}</td>
+                <td>{{ usuario.fechaRegistro | date:'short' }}</td>
+                <td>
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="eliminarUsuario(usuario.id!)"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-primary me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalAgregarUsuario"
+                    (click)="abrirModalEditar(usuario)"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+  
+        <ng-template #sinUsuarios>
+          <div class="alert alert-warning">No hay usuarios registrados.</div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal para agregar/editar usuario -->
+  <div
+    class="modal fade"
+    id="modalAgregarUsuario"
+    tabindex="-1"
+    aria-labelledby="modalAgregarUsuarioLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form [formGroup]="usuarioForm" (ngSubmit)="guardarUsuario()">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalAgregarUsuarioLabel">
+              {{ modoEditar ? 'Editar usuario' : 'Nuevo usuario' }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+  
+          <div class="modal-body row g-3">
+            <div class="col-md-6">
+              <label for="usuario" class="form-label">Nombre</label>
+              <input
+                id="usuario"
+                type="text"
+                class="form-control"
+                formControlName="usuario"
+                placeholder="Nombre completo del usuario"
+              />
+            </div>
+            <div class="col-md-6">
+              <label for="email" class="form-label">Correo electrónico</label>
+              <input
+                id="email"
+                type="email"
+                class="form-control"
+                formControlName="email"
+                placeholder="correo@ejemplo.com"
+              />
+            </div>
+            <div class="col-md-4">
+              <label for="rol" class="form-label">Rol</label>
+              <select id="rol" class="form-select" formControlName="rol">
+                <option value="">Seleccione rol</option>
+                <option value="dueño">Dueño</option>
+                <option value="administradora">Administradora</option>
+                <option value="recepcionista">Recepcionista</option>
+                <option value="gerente">Gerente</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="fechaRegistro" class="form-label">Fecha Registro</label>
+              <input
+                id="fechaRegistro"
+                type="date"
+                class="form-control"
+                formControlName="fechaRegistro"
+              />
+            </div>
+            <div class="col-md-4 d-flex align-items-center">
+              <div class="form-check mt-4">
+                <input
+                  id="activo"
+                  type="checkbox"
+                  class="form-check-input"
+                  formControlName="activo"
+                />
+                <label for="activo" class="form-check-label">Activo</label>
+              </div>
+            </div>
+            <!-- Campo opcional para idEmpleado -->
+            <div class="col-md-12">
+              <label for="idEmpleado" class="form-label">ID Empleado (Opcional)</label>
+              <input
+                id="idEmpleado"
+                type="text"
+                class="form-control"
+                formControlName="idEmpleado"
+                placeholder="ID del empleado asociado"
+              />
+            </div>
+          </div>
+  
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-success"
+              [disabled]="usuarioForm.invalid"
+              data-bs-dismiss="modal"
+            >
+              {{ modoEditar ? 'Actualizar usuario' : 'Guardar usuario' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
