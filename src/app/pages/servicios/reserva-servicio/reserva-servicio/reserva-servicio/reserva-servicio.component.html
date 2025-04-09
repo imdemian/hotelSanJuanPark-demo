@@ -1,0 +1,393 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="mb-3">Reserva de Servicios</h1>
+      <p class="text-muted">Reserva #{{ idReserva }}</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Formulario de Reserva</h5>
+        </div>
+        <div class="card-body">
+          <!-- Paso 1: Selección de tipo de servicio -->
+          <div *ngIf="pasoActual === 1">
+            <h4 class="mb-4">Paso 1: Selecciona el tipo de servicio</h4>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="card h-100 cursor-pointer" (click)="seleccionarTipoServicio('habitacion')" 
+                     [ngClass]="{'border-primary': tipoServicioSeleccionado === 'habitacion'}">
+                  <div class="card-body text-center">
+                    <i class="bi bi-house-door display-4 mb-3"></i>
+                    <h5>Habitaciones</h5>
+                    <p class="text-muted">Hospedaje temporal con opciones de desayuno</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card h-100 cursor-pointer" (click)="seleccionarTipoServicio('evento')"
+                     [ngClass]="{'border-primary': tipoServicioSeleccionado === 'evento'}">
+                  <div class="card-body text-center">
+                    <i class="bi bi-calendar-event display-4 mb-3"></i>
+                    <h5>Eventos</h5>
+                    <p class="text-muted">Alquiler de salones para eventos</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card h-100 cursor-pointer" (click)="seleccionarTipoServicio('banquete')"
+                     [ngClass]="{'border-primary': tipoServicioSeleccionado === 'banquete'}">
+                  <div class="card-body text-center">
+                    <i class="bi bi-cup-hot display-4 mb-3"></i>
+                    <h5>Banquetes</h5>
+                    <p class="text-muted">Opciones de alimentos y bebidas</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paso 2: Selección de servicio específico -->
+          <div *ngIf="pasoActual === 2">
+            <h4 class="mb-4">
+              Paso 2: Selecciona un 
+              <span *ngIf="tipoServicioSeleccionado === 'habitacion'">tipo de habitación</span>
+              <span *ngIf="tipoServicioSeleccionado === 'evento'">salón para evento</span>
+              <span *ngIf="tipoServicioSeleccionado === 'banquete'">tipo de banquete</span>
+            </h4>
+
+            <!-- Habitaciones -->
+            <div *ngIf="tipoServicioSeleccionado === 'habitacion'">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Capacidad</th>
+                      <th>Precio</th>
+                      <th>Precio con Desayuno</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let habitacion of habitaciones">
+                      <td>{{ habitacion.nombre }}</td>
+                      <td>{{ habitacion.capacidadPersonas }} persona(s)</td>
+                      <td>${{ habitacion.precio.toFixed(2) }}</td>
+                      <td>${{ habitacion.precioConDesayuno?.toFixed(2) }}</td>
+                      <td>
+                        <button class="btn btn-sm btn-primary" (click)="seleccionarServicio(habitacion)">
+                          Seleccionar
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Eventos -->
+            <div *ngIf="tipoServicioSeleccionado === 'evento'">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Salón</th>
+                      <th>Capacidad</th>
+                      <th>Precio</th>
+                      <th>Equipo Incluido</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let evento of eventos">
+                      <td>{{ evento.nombre }}</td>
+                      <td>{{ evento.capacidadMaxima }} persona(s)</td>
+                      <td>${{ evento.precio.toFixed(2) }}</td>
+                      <td>
+                        <small>{{ evento.equipoIncluido?.join(', ') || '' }}</small>
+                      </td>
+                      <td>
+                        <button class="btn btn-sm btn-primary" (click)="seleccionarServicio(evento)">
+                          Seleccionar
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Banquetes -->
+            <div *ngIf="tipoServicioSeleccionado === 'banquete'">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Precio por Persona</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let banquete of banquetes">
+                      <td>{{ banquete.nombre }}</td>
+                      <td>${{ banquete.precioUnitario.toFixed(2) }}</td>
+                      <td>
+                        <button class="btn btn-sm btn-primary" (click)="seleccionarServicio(banquete)">
+                          Seleccionar
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <button class="btn btn-secondary" (click)="volverPaso()">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+              </button>
+            </div>
+          </div>
+
+          <!-- Paso 3: Configuración de evento -->
+          <div *ngIf="pasoActual === 3 && servicioSeleccionado?.tipo === 'evento'">
+            <h4 class="mb-4">Paso 3: Configura los detalles del evento</h4>
+            
+            <div class="mb-3">
+              <label for="tipoEvento" class="form-label">Tipo de Evento</label>
+              <select id="tipoEvento" class="form-select" [(ngModel)]="tipoEvento" (change)="cambiarTipoEvento()">
+                <option value="">Selecciona un tipo de evento</option>
+                <option *ngFor="let tipo of tiposEvento" [value]="tipo">{{ tipo }}</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label for="fechaInicio" class="form-label">Fecha del Evento</label>
+              <input type="date" id="fechaInicio" class="form-control" [(ngModel)]="fechaInicio">
+            </div>
+            
+            <div class="mb-3">
+              <label for="cantidad" class="form-label">Cantidad de Personas</label>
+              <input type="number" id="cantidad" class="form-control" [(ngModel)]="cantidad" min="1" 
+       [max]="servicioSeleccionado?.capacidad || 0">
+              <small class="text-muted" *ngIf="servicioSeleccionado && servicioSeleccionado.tipo === 'evento'">
+                Capacidad máxima: {{ servicioSeleccionado.capacidadMaxima }} personas
+              </small>
+            </div>
+            
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="aplicarPromociones" [(ngModel)]="aplicarPromociones" (change)="cargarPromociones()">
+              <label class="form-check-label" for="aplicarPromociones">Aplicar promociones para eventos sociales</label>
+            </div>
+            
+            <div *ngIf="aplicarPromociones && promocionesDisponibles.length > 0" class="mb-3">
+              <label class="form-label">Promociones Disponibles</label>
+              <div class="card">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-3 text-muted">Las siguientes promociones están disponibles para {{ tipoEvento }}</h6>
+                  <ul class="list-group">
+                    <li *ngFor="let promocion of promocionesDisponibles" class="list-group-item">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" [id]="'promo-' + promocion.id" 
+                               [checked]="isPromocionSeleccionada(promocion)"
+                               (change)="togglePromocion(promocion)">
+                        <label class="form-check-label" [for]="'promo-' + promocion.id">
+                          {{ promocion.nombre }}
+                          <small class="d-block text-muted">{{ promocion.beneficios.join(', ') }}</small>
+                        </label>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div *ngIf="aplicarPromociones && habitacionesDisponibles.length > 0" class="mb-3">
+              <label for="habitacionCortesia" class="form-label">Habitación de Cortesía</label>
+              <select id="habitacionCortesia" class="form-select" [(ngModel)]="habitacionCortesia">
+                <option [ngValue]="null">Ninguna</option>
+                <option *ngFor="let habitacion of habitacionesDisponibles" [ngValue]="habitacion">
+                  {{ habitacion.nombre }} - ${{ habitacion.precio.toFixed(2) }} (Cortesía)
+                </option>
+              </select>
+            </div>
+            
+            <div class="mt-3">
+              <button class="btn btn-secondary me-2" (click)="volverPaso()">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+              </button>
+              <button class="btn btn-primary" (click)="pasoActual = 5" [disabled]="!tipoEvento">
+                Continuar<i class="bi bi-arrow-right ms-2"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Paso 4: Configuración de banquete -->
+          <div *ngIf="pasoActual === 4 && servicioSeleccionado?.tipo === 'banquete'">
+            <h4 class="mb-4">Paso 4: Configura los detalles del banquete</h4>
+            
+            <div class="mb-3">
+              <label for="fechaInicio" class="form-label">Fecha del Banquete</label>
+              <input type="date" id="fechaInicio" class="form-control" [(ngModel)]="fechaInicio">
+            </div>
+            
+            <div class="mb-3">
+              <label for="cantidadPersonas" class="form-label">Cantidad de Personas</label>
+              <input type="number" id="cantidadPersonas" class="form-control" [(ngModel)]="cantidadPersonas" min="1">
+            </div>
+            
+            <div class="alert alert-info" *ngIf="cantidadPersonas > 0 && servicioSeleccionado">
+              <strong>Subtotal:</strong> ${{ calcularSubtotal().toFixed(2) }}
+              <small class="d-block" *ngIf="servicioSeleccionado?.tipo === 'banquete'">
+                {{ cantidadPersonas }} personas x ${{ (servicioSeleccionado?.precioUnitario || 0).toFixed(2) }}
+              </small>
+            </div>
+            
+            <div class="mt-3">
+              <button class="btn btn-secondary me-2" (click)="volverPaso()">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+              </button>
+              <button class="btn btn-primary" (click)="pasoActual = 5" [disabled]="cantidadPersonas <= 0">
+                Continuar<i class="bi bi-arrow-right ms-2"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Paso 5: Confirmación -->
+          <div *ngIf="pasoActual === 5">
+            <h4 class="mb-4">Paso 5: Confirma los detalles</h4>
+            
+            <div class="card mb-3">
+              <div class="card-header">
+                <h5 class="mb-0">Resumen del Servicio</h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <p><strong>Tipo de Servicio:</strong> 
+                      <span *ngIf="servicioSeleccionado?.tipo === 'habitacion'">Habitación</span>
+                      <span *ngIf="servicioSeleccionado?.tipo === 'evento'">Evento</span>
+                      <span *ngIf="servicioSeleccionado?.tipo === 'banquete'">Banquete</span>
+                    </p>
+                    <p><strong>Servicio:</strong> {{ servicioSeleccionado?.nombre }}</p>
+                    <p><strong>Fecha:</strong> {{ fechaInicio }}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p *ngIf="servicioSeleccionado?.tipo === 'habitacion'">
+                      <strong>Cantidad:</strong> {{ cantidad }}
+                    </p>
+                    <p *ngIf="servicioSeleccionado?.tipo === 'evento'">
+                      <strong>Tipo de Evento:</strong> {{ tipoEvento }}
+                    </p>
+                    <p *ngIf="servicioSeleccionado?.tipo === 'evento'">
+                      <strong>Cantidad de Personas:</strong> {{ cantidad }}
+                    </p>
+                    <p *ngIf="servicioSeleccionado?.tipo === 'banquete'">
+                      <strong>Cantidad de Personas:</strong> {{ cantidadPersonas }}
+                    </p>
+                    <p><strong>Subtotal:</strong> ${{ calcularSubtotal().toFixed(2) }}</p>
+                  </div>
+                </div>
+                
+                <div *ngIf="servicioSeleccionado?.tipo === 'evento' && aplicarPromociones && promocionesSeleccionadas.length > 0">
+                  <hr>
+                  <h6>Promociones Aplicadas</h6>
+                  <ul class="list-group">
+                    <li *ngFor="let promocion of promocionesSeleccionadas" class="list-group-item">
+                      {{ promocion.nombre }}
+                      <small class="d-block text-muted">{{ promocion.beneficios.join(', ') }}</small>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div *ngIf="servicioSeleccionado?.tipo === 'evento' && aplicarPromociones && habitacionCortesia">
+                  <hr>
+                  <h6>Habitación de Cortesía</h6>
+                  <p>{{ habitacionCortesia.nombre }} - ${{ habitacionCortesia.precio.toFixed(2) }} (Cortesía)</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-3">
+              <button class="btn btn-secondary me-2" (click)="volverPaso()">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+              </button>
+              <button class="btn btn-success" (click)="agregarServicio()">
+                <i class="bi bi-plus-circle me-2"></i>Agregar a la Reserva
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">Resumen de la Reserva</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="serviciosAgregados.length === 0" class="text-center py-4">
+            <i class="bi bi-cart display-4 text-muted"></i>
+            <p class="mt-3">No hay servicios agregados a la reserva</p>
+          </div>
+          
+          <div *ngIf="serviciosAgregados.length > 0">
+            <div *ngFor="let item of serviciosAgregados; let i = index" class="card mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="mb-1">{{ item.servicio.nombre }}</h6>
+                    <p class="mb-1 text-muted">
+                      <span *ngIf="item.servicio?.tipo === 'banquete'">
+                        {{ item.cantidad }} personas x ${{ (item.servicio?.precioUnitario || 0).toFixed(2) }}
+                      </span>
+                      <span *ngIf="item.servicio.tipo !== 'banquete'">
+                        {{ item.cantidad }} x ${{ item.servicio.precio.toFixed(2) }}
+                      </span>
+                    </p>
+                    <p class="mb-0"><strong>Subtotal:</strong> ${{ item.subtotal.toFixed(2) }}</p>
+                  </div>
+                  <button class="btn btn-sm btn-outline-danger" (click)="eliminarServicio(i)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+                
+                <div *ngIf="item.promociones && item.promociones.length > 0" class="mt-2">
+                  <small class="text-success">
+                    <i class="bi bi-tag-fill me-1"></i>Promociones aplicadas
+                  </small>
+                </div>
+                
+                <div *ngIf="item.habitacionCortesia" class="mt-2">
+                  <small class="text-success">
+                    <i class="bi bi-house-door-fill me-1"></i>Habitación de cortesía: {{ item.habitacionCortesia.nombre }}
+                  </small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center fw-bold fs-5 mt-3">
+              <span>Total:</span>
+              <span>${{ costoTotal.toFixed(2) }}</span>
+            </div>
+            
+            <div class="mt-4">
+              <button class="btn btn-success w-100 mb-2" (click)="guardarReserva()">
+                <i class="bi bi-check-circle me-2"></i>Confirmar Reserva
+              </button>
+              <button class="btn btn-outline-danger w-100" (click)="cancelarReserva()">
+                <i class="bi bi-x-circle me-2"></i>Cancelar Reserva
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

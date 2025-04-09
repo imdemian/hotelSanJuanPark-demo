@@ -11,10 +11,9 @@
       <span class="input-group-text">
         <i class="bi bi-search"></i>
       </span>
-      <input type="text" class="form-control" placeholder="Buscar empleado..." [(ngModel)]="filtroBusqueda">
-      <button class="btn btn-outline-secondary" type="button" (click)="toggleFiltros()">
-        <i class="bi bi-funnel"></i> Filtros
-      </button>
+      <input type="text" class="form-control" placeholder="Buscar empleado..." 
+    [(ngModel)]="filtroBusqueda" [ngModelOptions]="{standalone: true}">
+  <button class="btn btn-outline-secondary" type="button">Buscar</button>
     </div>
 
     <div class="card-body">
