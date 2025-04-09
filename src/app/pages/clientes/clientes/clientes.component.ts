@@ -103,8 +103,6 @@ export class ClientesComponent implements OnInit {
       numPersonas: cliente.numPersonas || 1,
       fechaReserva: this.formatDateForInput(cliente.fechaReserva),
       fechaEstancia: this.formatDateForInput(cliente.fechaEstancia),
-      fechaReserva: this.formatDateForInput(cliente.fechaReserva),
-      fechaEstancia: this.formatDateForInput(cliente.fechaEstancia),
       frecuenciaCompra: cliente.frecuenciaCompra || 1,
       fechasEspeciales: cliente.fechasEspeciales || '',
     });

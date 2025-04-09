@@ -128,29 +128,31 @@
             </select>
           </div>
 
+          <!-- Buscar y seleccionar cliente -->
           <div class="col-md-12">
             <label for="buscarCliente" class="form-label">Buscar cliente</label>
             <input
+              id="buscarCliente"
               type="text"
               class="form-control mb-2"
               [(ngModel)]="busquedaCliente"
               name="buscarCliente"
-              (input)="aplicarCliente()"
+              placeholder="Buscar por nombre o teléfono"
+              (input)="filtrarClientes()"
             />
-            <ul class="list-group" *ngIf="busquedaCliente">
-              <li
-                class="list-group-item list-group-item-action"
-                *ngFor="let cliente of clientes | slice : 0"
-                [hidden]="
-                  !cliente.nombre
-                    ?.toLowerCase()
-                    .includes(busquedaCliente.toLowerCase() || '')
-                "
-                (click)="seleccionarCliente(cliente)"
+            <select
+              class="form-select"
+              *ngIf="clientesFiltrados.length > 0"
+              (change)="seleccionarCliente($event.target.value)"
+            >
+              <option value="" disabled selected>Selecciona un cliente</option>
+              <option
+                *ngFor="let cliente of clientesFiltrados"
+                [value]="cliente.id"
               >
                 {{ cliente.nombre }} - {{ cliente.telefono }}
-              </li>
-            </ul>
+              </option>
+            </select>
           </div>
 
           <div class="col-md-4">
@@ -176,114 +178,8 @@
             <input formControlName="correo" class="form-control" type="email" />
           </div>
 
-          <div *ngIf="esHabitacion()" class="row g-2">
-            <div class="col-md-6">
-              <label>Fecha entrada</label>
-              <input
-                formControlName="fechaEntrada"
-                type="date"
-                class="form-control"
-              />
-            </div>
-            <div class="col-md-6">
-              <label>Fecha salida</label>
-              <input
-                formControlName="fechaSalida"
-                type="date"
-                class="form-control"
-              />
-            </div>
-            <div class="col-md-6">
-              <label>Habitación</label>
-              <select class="form-select" formControlName="habitacionId">
-                <option *ngFor="let h of habitaciones" [value]="h.id">
-                  {{ h.nombre }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label>Costo por noche</label>
-              <input
-                class="form-control"
-                type="number"
-                formControlName="costoPorNoche"
-              />
-            </div>
-            <div class="col-md-3">
-              <label>Número de personas</label>
-              <input
-                class="form-control"
-                type="number"
-                formControlName="numeroPersonas"
-              />
-            </div>
-          </div>
-
-          <div *ngIf="esSalon()" class="row g-2">
-            <div class="col-md-6">
-              <label>Fecha del evento</label>
-              <input
-                formControlName="fechaEvento"
-                type="date"
-                class="form-control"
-              />
-            </div>
-            <div class="col-md-6">
-              <label>Salón</label>
-              <select class="form-select" formControlName="salonId">
-                <option *ngFor="let s of salones" [value]="s.id">
-                  {{ s.nombre }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-12">
-              <label>Promociones</label>
-              <div
-                class="form-check"
-                *ngFor="let promo of promocionesDisponibles"
-              >
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  [value]="promo"
-                  [checked]="promocionesSeleccionadas.includes(promo)"
-                  (change)="onPromocionToggle($event, promo)"
-                />
-                <label class="form-check-label">{{ promo }}</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label">Total</label>
-            <input
-              formControlName="total"
-              type="number"
-              class="form-control"
-              readonly
-            />
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label">Forma de pago</label>
-            <select class="form-select" formControlName="formaPago">
-              <option value="">Selecciona una opción</option>
-              <option value="Tarjeta">Tarjeta</option>
-              <option value="Transferencia">Transferencia</option>
-              <option value="Efectivo">Efectivo</option>
-            </select>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label">Estado</label>
-            <select class="form-select" formControlName="estado">
-              <option value="Pendiente">Pendiente</option>
-              <option value="Parcial">Parcial</option>
-              <option value="Confirmada">Confirmada</option>
-              <option value="Pagado">Pagado</option>
-              <option value="Cancelada">Cancelada</option>
-            </select>
-          </div>
+          <!-- Aquí van las secciones específicas de habitación o salón (ya las tienes) -->
+          <!-- ... -->
         </div>
 
         <div class="modal-footer">
