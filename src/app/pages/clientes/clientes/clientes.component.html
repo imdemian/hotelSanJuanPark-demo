@@ -1,3 +1,62 @@
+<!-- Ranking de Clientes -->
+<div class="card-body border-bottom mb-4">
+  <h6 class="mb-3"><i class="bi bi-trophy me-2"></i>Ranking de Clientes</h6>
+  <div class="row">
+    <!-- Más Frecuentes -->
+    <div class="col-md-6 mb-3 mb-md-0">
+      <div class="card h-100">
+        <div class="card-header py-2 bg-light">
+          <small class="fw-bold"><i class="bi bi-graph-up me-1"></i>Más Frecuentes</small>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li *ngFor="let cliente of topClientesFrecuencia; let i = index"
+                class="list-group-item d-flex justify-content-between align-items-center py-2">
+              <div class="d-flex align-items-center">
+                <span class="badge bg-primary me-2">{{ i + 1 }}</span>
+                <span class="text-truncate" style="max-width: 120px;">{{ cliente.nombre }}</span>
+                <span *ngIf="cliente.membresia"
+                      class="badge ms-2 {{ getMembresiaBadgeClass(cliente.membresia) }}">
+                  {{ cliente.membresia }}
+                </span>
+              </div>
+              <span class="badge bg-dark rounded-pill">
+                {{ cliente.frecuenciaCompra }} compras
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mayor Valor -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header py-2 bg-light">
+          <small class="fw-bold"><i class="bi bi-currency-dollar me-1"></i>Mayor Valor</small>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li *ngFor="let cliente of topClientesValor; let i = index"
+                class="list-group-item d-flex justify-content-between align-items-center py-2">
+              <div class="d-flex align-items-center">
+                <span class="badge bg-success me-2">{{ i + 1 }}</span>
+                <span class="text-truncate" style="max-width: 120px;">{{ cliente.nombre }}</span>
+                <span *ngIf="cliente.membresia"
+                      class="badge ms-2 {{ getMembresiaBadgeClass(cliente.membresia) }}">
+                  {{ cliente.membresia }}
+                </span>
+              </div>
+              <span class="badge bg-dark rounded-pill">
+                ${{ cliente.costoReserva?.toFixed(2) || '0.00' }}
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="container py-4">
   <div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center">

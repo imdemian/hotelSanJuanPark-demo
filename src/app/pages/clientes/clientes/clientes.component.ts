@@ -103,6 +103,8 @@ export class ClientesComponent implements OnInit {
       numPersonas: cliente.numPersonas || 1,
       fechaReserva: this.formatDateForInput(cliente.fechaReserva),
       fechaEstancia: this.formatDateForInput(cliente.fechaEstancia),
+      fechaReserva: this.formatDateForInput(cliente.fechaReserva),
+      fechaEstancia: this.formatDateForInput(cliente.fechaEstancia),
       frecuenciaCompra: cliente.frecuenciaCompra || 1,
       fechasEspeciales: cliente.fechasEspeciales || '',
     });
@@ -112,6 +114,27 @@ export class ClientesComponent implements OnInit {
     setTimeout(() => {
       const modalEl = document.getElementById('modalAgregarCliente');
       if (modalEl) {
+        // Cierra cualquier modal existente primero
+        if (this.modalInstance) {
+          this.modalInstance.hide();
+        }
+
+        // Crea nueva instancia
+        this.modalInstance = new bootstrap.Modal(modalEl, {
+          backdrop: true, // Fondo oscuro
+          keyboard: true, // Permite cerrar con ESC
+        });
+
+        // Maneja eventos de cierre
+        modalEl.addEventListener('hidden.bs.modal', () => {
+          this.clienteForm.reset();
+          this.modoEditar = false;
+          this.clienteEditandoId = null;
+
+          // Forzamos actualización del array para evitar estilos grises residuales
+          this.clientes = [...this.clientes];
+        });
+
         // Cierra cualquier modal existente primero
         if (this.modalInstance) {
           this.modalInstance.hide();
@@ -263,5 +286,31 @@ export class ClientesComponent implements OnInit {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  // En clientes.component.ts
+  get topClientesFrecuencia(): Cliente[] {
+    return [...this.clientes]
+      .sort((a, b) => (b.frecuenciaCompra || 0) - (a.frecuenciaCompra || 0))
+      .slice(0, 3); // Mostrar top 3
+  }
+
+  get topClientesValor(): Cliente[] {
+    return [...this.clientes]
+      .sort((a, b) => (b.costoReserva || 0) - (a.costoReserva || 0))
+      .slice(0, 3); // Mostrar top 3
+  }
+
+  getMembresiaBadgeClass(membresia: string): string {
+    switch (membresia) {
+      case 'VIP':
+        return 'bg-warning';
+      case 'Premier':
+        return 'bg-primary';
+      case 'Tradicional':
+        return 'bg-success';
+      default:
+        return 'bg-secondary';
+    }
   }
 }

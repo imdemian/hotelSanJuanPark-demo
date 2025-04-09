@@ -1,0 +1,120 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="mb-3">Servicios</h1>
+      <p class="text-muted">Administra los servicios ofrecidos por el Hotel San Juan Park</p>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="input-group">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Buscar servicios..." 
+          [(ngModel)]="filtroBusqueda"
+        >
+        <button class="btn btn-outline-secondary" type="button">
+          <i class="bi bi-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <select class="form-select" [(ngModel)]="filtroTipo">
+        <option value="todos">Todos los servicios</option>
+        <option value="habitacion">Habitaciones</option>
+        <option value="evento">Eventos</option>
+        <option value="banquete">Banquetes</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <a routerLink="/servicios/nuevo" class="btn btn-primary w-100">
+        <i class="bi bi-plus-circle me-2"></i>Nuevo Servicio
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Tipo</th>
+                  <th>Capacidad</th>
+                  <th>Precio</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let servicio of serviciosFiltrados">
+                  <td>{{ servicio.nombre }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'bg-primary': servicio.tipo === 'habitacion',
+                      'bg-success': servicio.tipo === 'evento',
+                      'bg-warning': servicio.tipo === 'banquete'
+                    }">
+                      {{ servicio.tipo === 'habitacion' ? 'Habitación' : 
+                         servicio.tipo === 'evento' ? 'Evento' : 'Banquete' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span *ngIf="servicio.tipo === 'habitacion'">
+                      {{ servicio.capacidadPersonas || 0 }} persona(s)
+                    </span>
+                    <span *ngIf="servicio.tipo === 'evento'">
+                      {{ servicio.capacidadMaxima || 0 }} persona(s)
+                    </span>
+                    <span *ngIf="servicio.tipo === 'banquete'">
+                      N/A
+                    </span>
+                  </td>
+                  <td>
+                    <div *ngIf="servicio.tipo === 'habitacion'">
+                      ${{ (servicio.precio || 0).toFixed(2) }}
+                      <small class="text-muted d-block" *ngIf="servicio.incluyeDesayuno">
+                        Con desayuno: ${{ (servicio.precioConDesayuno || 0).toFixed(2) }}
+                      </small>
+                    </div>
+                    <div *ngIf="servicio.tipo !== 'habitacion'">
+                      ${{ (servicio.precio || 0).toFixed(2) }}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="servicio.activo ? 'bg-success' : 'bg-danger'">
+                      {{ servicio.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group">
+                      <a [routerLink]="['/servicios', servicio.id]" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                      <a [routerLink]="['/servicios/editar', servicio.id]" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="serviciosFiltrados.length === 0">
+                  <td colspan="6" class="text-center py-4">
+                    <p class="mb-0">No se encontraron servicios</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
