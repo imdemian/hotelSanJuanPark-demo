@@ -281,15 +281,41 @@ export class ReservacionesComponent implements OnInit {
     );
   }
 
-  get opcionesServicio(): any[] {
+  // Getter que filtra los servicios según el tipo seleccionado
+  get opcionesServicio(): Servicio[] {
     const tipo = this.reservacionForm.get('tipoServicio')?.value;
     if (tipo) {
-      // Se filtran los servicios que tengan un tipoServicio igual al seleccionado
       return this.servicios.filter(
         (s) => s.tipoServicio.toLowerCase() === tipo.toLowerCase()
       );
     }
     return [];
+  }
+
+  // Método para actualizar automáticamente los campos "costoPorNoche" y "numeroPersonas"
+  // al seleccionar un servicio (valor = nombre del servicio)
+  seleccionarServicio(servicioNombre: string): void {
+    // Busca en la lista filtrada el servicio cuyo nombre coincide
+    const servicioSeleccionado = this.opcionesServicio.find(
+      (s) => s.nombre === servicioNombre
+    );
+    if (servicioSeleccionado) {
+      // Utiliza el precio del servicio para "costoPorNoche"
+      const costoPorNoche = servicioSeleccionado.precio;
+      // Usamos la capacidad (que puede ser string o number) para "numeroPersonas"
+      let numeroPersonas = 1;
+      if (servicioSeleccionado.capacidad) {
+        numeroPersonas =
+          typeof servicioSeleccionado.capacidad === 'number'
+            ? servicioSeleccionado.capacidad
+            : parseInt(servicioSeleccionado.capacidad, 10) || 1;
+      }
+      // Actualiza el formulario con estos valores
+      this.reservacionForm.patchValue({
+        costoPorNoche: costoPorNoche,
+        numeroPersonas: numeroPersonas,
+      });
+    }
   }
 
   filtroBusqueda = '';
