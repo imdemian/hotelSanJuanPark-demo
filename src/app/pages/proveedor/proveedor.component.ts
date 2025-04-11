@@ -41,10 +41,12 @@ export class ProveedoresComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
     });
 
-    this.proveedorService.getProveedores().subscribe((data) => {
-      this.proveedores = data;
-      this.cargando = false;
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      this.proveedorService.getProveedores().subscribe((data) => {
+        this.proveedores = data;
+        this.cargando = false;
+      });
+    }
   }
 
   abrirModalNuevo() {
