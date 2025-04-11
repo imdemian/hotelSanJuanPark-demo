@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { ClienteService } from '../../../services/clientes/cliente.service';
 import { Cliente } from '../../../models/cliente.model';
-import { CommonModule, NgIf, NgFor } from '@angular/common';
+import { CommonModule, NgIf, NgFor, isPlatformBrowser } from '@angular/common';
 
 declare var bootstrap: any;
 
@@ -37,12 +37,16 @@ export class ClientesComponent implements OnInit {
 
   constructor(
     private clienteService: ClienteService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
     this.inicializarFormulario();
-    this.cargarClientes();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.cargarClientes();
+    }
   }
 
   inicializarFormulario(): void {
@@ -109,27 +113,24 @@ export class ClientesComponent implements OnInit {
   }
 
   inicializarModal(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     setTimeout(() => {
       const modalEl = document.getElementById('modalAgregarCliente');
       if (modalEl) {
-        // Cierra cualquier modal existente primero
         if (this.modalInstance) {
           this.modalInstance.hide();
         }
 
-        // Crea nueva instancia
         this.modalInstance = new bootstrap.Modal(modalEl, {
-          backdrop: true, // Fondo oscuro
-          keyboard: true, // Permite cerrar con ESC
+          backdrop: true,
+          keyboard: true,
         });
 
-        // Maneja eventos de cierre
         modalEl.addEventListener('hidden.bs.modal', () => {
           this.clienteForm.reset();
           this.modoEditar = false;
           this.clienteEditandoId = null;
-
-          // Forzamos actualización del array para evitar estilos grises residuales
           this.clientes = [...this.clientes];
         });
 

@@ -71,18 +71,19 @@ export class ReservacionesComponent implements OnInit {
   ngOnInit(): void {
     this.inicializarFormulario();
 
-    this.reservacionService.getReservaciones().subscribe((data) => {
-      this.reservaciones = data;
-      this.cargando = false;
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      this.reservacionService.getReservaciones().subscribe((data) => {
+        this.reservaciones = data;
+        this.cargando = false;
+      });
 
-    this.reservacionForm.valueChanges.subscribe(() => {
-      this.calcularTotal();
-    });
+      this.reservacionForm.valueChanges.subscribe(() => {
+        this.calcularTotal();
+      });
 
-    this.cargarClientes();
-
-    this.cargarServicios();
+      this.cargarClientes();
+      this.cargarServicios();
+    }
   }
 
   inicializarFormulario() {

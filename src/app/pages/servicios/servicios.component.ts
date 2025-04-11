@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { NgIf, NgFor } from '@angular/common';
 import {
   FormBuilder,
@@ -33,12 +33,15 @@ export class ServiciosComponent implements OnInit {
 
   constructor(
     private serviciosService: ServiciosService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
     this.inicializarFormulario();
-    this.cargarServicios();
+    if (isPlatformBrowser(this.platformId)) {
+      this.cargarServicios();
+    }
   }
 
   // Inicializa el FormGroup para el servicio

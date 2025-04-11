@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { OrdenCompra } from '../../models/orden.model';
 import { OrdenCompraService } from '../../services/orden/orden-compra.service';
@@ -12,21 +12,21 @@ import { ProveedorService } from '../../services/proveedor/proveedor.service';
   standalone: true,
   templateUrl: './ordenes.component.html',
   styleUrls: ['./ordenes.component.scss'],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
 })
 export class OrdenesComponent implements OnInit {
   ordenes: OrdenCompra[] = [];
   proveedores: Proveedor[] = [];
-  
+
   ordenForm!: FormGroup;
   cargando: boolean = true;
-  
+
   modoEditar: boolean = false;
   ordenEditandoId: string | null = null;
-  
+
   // Filtro por estado (pendiente, aprobada, rechazada)
   filtroEstado: string = '';
-  
+
   // Variables para manejar modales de confirmación
   ordenSeleccionada: OrdenCompra | null = null; // Para rechazo o eliminación
   ordenEliminar: OrdenCompra | null = null; // Orden a eliminar
@@ -34,29 +34,30 @@ export class OrdenesComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private ordenService: OrdenCompraService,
-    private proveedorService: ProveedorService
-  ) { }
+    private proveedorService: ProveedorService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
-    // Inicializa el formulario de órdenes
     this.ordenForm = this.fb.group({
       proveedorId: ['', Validators.required],
       productos: ['', Validators.required],
       fechaCreacion: [new Date(), Validators.required],
       estado: ['pendiente', Validators.required],
-      comentario: ['']
+      comentario: [''],
     });
 
-    // Cargar órdenes de compra
-    this.ordenService.getOrdenes().subscribe(data => {
-      this.ordenes = data;
-      this.cargando = false;
-    });
-    
-    // Cargar proveedores para el selector
-    this.proveedorService.getProveedores().subscribe(data => {
-      this.proveedores = data;
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      // Solo se ejecuta en el navegador
+      this.ordenService.getOrdenes().subscribe((data) => {
+        this.ordenes = data;
+        this.cargando = false;
+      });
+
+      this.proveedorService.getProveedores().subscribe((data) => {
+        this.proveedores = data;
+      });
+    }
   }
 
   // Abre el modal para crear una nueva orden
@@ -66,7 +67,7 @@ export class OrdenesComponent implements OnInit {
     this.ordenForm.reset();
     this.ordenForm.patchValue({
       fechaCreacion: new Date(),
-      estado: 'pendiente'
+      estado: 'pendiente',
     });
   }
 
@@ -79,43 +80,47 @@ export class OrdenesComponent implements OnInit {
       productos: orden.productos,
       fechaCreacion: orden.fechaCreacion,
       estado: orden.estado,
-      comentario: orden.comentario || ''
+      comentario: orden.comentario || '',
     });
   }
 
   // Guarda (agrega o actualiza) la orden de compra
   guardarOrden(): void {
     if (this.ordenForm.invalid) return;
-    
+
     const data = this.ordenForm.value;
     if (!this.modoEditar) data.estado = 'pendiente';
 
     if (this.modoEditar && this.ordenEditandoId) {
-      this.ordenService.actualizarOrden(this.ordenEditandoId, data)
+      this.ordenService
+        .actualizarOrden(this.ordenEditandoId, data)
         .then(() => this.ordenForm.reset())
-        .catch(error => console.error('Error actualizando orden: ', error));
+        .catch((error) => console.error('Error actualizando orden: ', error));
     } else {
-      this.ordenService.agregarOrden(data)
+      this.ordenService
+        .agregarOrden(data)
         .then(() => this.ordenForm.reset())
-        .catch(error => console.error('Error agregando orden: ', error));
+        .catch((error) => console.error('Error agregando orden: ', error));
     }
   }
 
   // Aprobación de la orden: actualiza el estado a "aprobada"
   aprobarOrden(orden: OrdenCompra): void {
     if (orden.id) {
-      this.ordenService.actualizarOrden(orden.id, { estado: 'aprobada' })
+      this.ordenService
+        .actualizarOrden(orden.id, { estado: 'aprobada' })
         .then(() => console.log('Orden aprobada'))
-        .catch(error => console.error('Error aprobando orden: ', error));
+        .catch((error) => console.error('Error aprobando orden: ', error));
     }
   }
 
   // Rechaza la orden con un comentario (para ello se abre modal de rechazo)
   rechazarOrden(orden: OrdenCompra, comentario: string): void {
     if (orden.id) {
-      this.ordenService.actualizarOrden(orden.id, { estado: 'rechazada', comentario })
+      this.ordenService
+        .actualizarOrden(orden.id, { estado: 'rechazada', comentario })
         .then(() => console.log('Orden rechazada'))
-        .catch(error => console.error('Error rechazando orden: ', error));
+        .catch((error) => console.error('Error rechazando orden: ', error));
     }
   }
 
@@ -125,34 +130,34 @@ export class OrdenesComponent implements OnInit {
   }
 
   // Parte relevante del componente OrdenesComponent
-abrirModalEliminar(orden: OrdenCompra): void {
-  this.ordenEliminar = orden;
-}
-  
-confirmarEliminarOrden(): void {
-  if (this.ordenEliminar && this.ordenEliminar.id) {
-    this.ordenService.eliminarOrden(this.ordenEliminar.id)
-      .then(() => {
-        console.log('Orden eliminada correctamente');
-        this.ordenEliminar = null;
-      })
-      .catch(error => console.error('Error eliminando orden: ', error));
+  abrirModalEliminar(orden: OrdenCompra): void {
+    this.ordenEliminar = orden;
   }
-}
+
+  confirmarEliminarOrden(): void {
+    if (this.ordenEliminar && this.ordenEliminar.id) {
+      this.ordenService
+        .eliminarOrden(this.ordenEliminar.id)
+        .then(() => {
+          console.log('Orden eliminada correctamente');
+          this.ordenEliminar = null;
+        })
+        .catch((error) => console.error('Error eliminando orden: ', error));
+    }
+  }
 
   // Getter para filtrar la lista de órdenes por estado
   get ordenesFiltradas(): OrdenCompra[] {
     if (!this.filtroEstado.trim()) return this.ordenes;
-    return this.ordenes.filter(o =>
-      o.estado.toLowerCase() === this.filtroEstado.trim().toLowerCase()
+    return this.ordenes.filter(
+      (o) => o.estado.toLowerCase() === this.filtroEstado.trim().toLowerCase()
     );
   }
 
   // Devuelve el nombre del proveedor dado su ID, consultando el arreglo de proveedores
   getNombreProveedor(proveedorId: string | undefined): string {
     if (!proveedorId) return 'Sin proveedor';
-    const prov = this.proveedores.find(p => p.id === proveedorId);
+    const prov = this.proveedores.find((p) => p.id === proveedorId);
     return prov ? prov.nombre : proveedorId;
   }
-    
 }

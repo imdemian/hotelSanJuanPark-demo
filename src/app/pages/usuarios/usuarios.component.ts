@@ -1,9 +1,9 @@
 // src/app/pages/usuarios/usuarios.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Usuario } from '../../models/usuario.model';
 import { UsuarioService } from '../../services/usuario/usuario.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -12,20 +12,21 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   templateUrl: './usuarios.component.html',
   styleUrls: ['./usuarios.component.scss'],
   // Se agregan los módulos necesarios para que funcione ngModel y formGroup
-  imports: [CommonModule, FormsModule, ReactiveFormsModule]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
 })
 export class UsuariosComponent implements OnInit {
   usuarios: Usuario[] = [];
   usuarioForm!: FormGroup;
   cargando: boolean = true;
-  
+
   modoEditar: boolean = false;
   usuarioEditandoId: string | null = null;
-  
+
   // Propiedad para el filtro de búsqueda
   filtroBusqueda: string = '';
 
   constructor(
+    @Inject(PLATFORM_ID) private platformID: Object,
     private fb: FormBuilder,
     private usuarioService: UsuarioService
   ) {}
@@ -38,14 +39,15 @@ export class UsuariosComponent implements OnInit {
       rol: ['', Validators.required],
       activo: [true],
       fechaRegistro: [new Date(), Validators.required],
-      idEmpleado: ['']
+      idEmpleado: [''],
     });
 
-    // Suscribirse al observable que retorna la lista de usuarios desde el servicio
-    this.usuarioService.getUsuarios().subscribe((data) => {
-      this.usuarios = data;
-      this.cargando = false;
-    });
+    if (isPlatformBrowser(this.platformID)) {
+      this.usuarioService.getUsuarios().subscribe((data) => {
+        this.usuarios = data;
+        this.cargando = false;
+      });
+    }
   }
 
   // Abre el modal para agregar un nuevo usuario
@@ -67,7 +69,7 @@ export class UsuariosComponent implements OnInit {
       rol: usuario.rol,
       activo: usuario.activo,
       fechaRegistro: usuario.fechaRegistro,
-      idEmpleado: usuario.idEmpleado || ''
+      idEmpleado: usuario.idEmpleado || '',
     });
   }
 
@@ -77,13 +79,15 @@ export class UsuariosComponent implements OnInit {
     const data = this.usuarioForm.value;
 
     if (this.modoEditar && this.usuarioEditandoId) {
-      this.usuarioService.actualizarUsuario(this.usuarioEditandoId, data)
+      this.usuarioService
+        .actualizarUsuario(this.usuarioEditandoId, data)
         .then(() => {
           this.usuarioForm.reset();
         })
         .catch((error) => console.error('Error actualizando usuario: ', error));
     } else {
-      this.usuarioService.agregarUsuario(data)
+      this.usuarioService
+        .agregarUsuario(data)
         .then(() => {
           this.usuarioForm.reset();
         })
@@ -93,14 +97,15 @@ export class UsuariosComponent implements OnInit {
 
   // Elimina un usuario dado su id
   eliminarUsuario(id: string): void {
-    this.usuarioService.eliminarUsuario(id)
+    this.usuarioService
+      .eliminarUsuario(id)
       .catch((error) => console.error('Error eliminando usuario: ', error));
   }
 
   // Retorna la lista de usuarios filtrados según el valor ingresado en filtroBusqueda
   get usuariosFiltrados(): Usuario[] {
     if (!this.filtroBusqueda.trim()) return this.usuarios;
-    return this.usuarios.filter(u =>
+    return this.usuarios.filter((u) =>
       `${u.usuario} ${u.email} ${u.rol}`
         .toLowerCase()
         .includes(this.filtroBusqueda.trim().toLowerCase())
